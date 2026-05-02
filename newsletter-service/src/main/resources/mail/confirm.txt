@@ -1,0 +1,2 @@
+Hello {{name}},
+Please confirm your InkWell newsletter subscription.

@@ -1,0 +1,184 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "${MAIL_PORT:-1025}:1025"
+      - "${MAIL_UI_PORT:-8025}:8025"
+
+  discovery-service:
+    build: ./discovery-service
+    environment:
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://discovery-service:8761
+      MANAGEMENT_BASE_URL: http://discovery-service:8761
+    ports:
+      - "8761:8761"
+
+  admin-server:
+    build: ./admin-server
+    depends_on: [discovery-service]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+    ports:
+      - "${ADMIN_SERVER_PORT:-9090}:9090"
+
+  api-gateway:
+    build: ./api-gateway
+    depends_on: [discovery-service, admin-server, redis]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://api-gateway:8080
+      MANAGEMENT_BASE_URL: http://api-gateway:8080
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: http://localhost:${FRONTEND_PORT:-5173}
+    ports:
+      - "8080:8080"
+
+  auth-service:
+    build: ./auth-service
+    depends_on: [mysql, discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://auth-service:8081
+      MANAGEMENT_BASE_URL: http://auth-service:8081
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      DB_NAME: auth_db
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
+
+  post-service:
+    build: ./post-service
+    depends_on: [mysql, redis, rabbitmq, discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://post-service:8082
+      MANAGEMENT_BASE_URL: http://post-service:8082
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      DB_NAME: post_db
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+
+  category-service:
+    build: ./category-service
+    depends_on: [mysql, discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://category-service:8083
+      MANAGEMENT_BASE_URL: http://category-service:8083
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      DB_NAME: category_db
+
+  comment-service:
+    build: ./comment-service
+    depends_on: [mysql, rabbitmq, discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://comment-service:8084
+      MANAGEMENT_BASE_URL: http://comment-service:8084
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      DB_NAME: comment_db
+      RABBITMQ_HOST: rabbitmq
+
+  media-service:
+    build: ./media-service
+    depends_on: [mysql, discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://media-service:8085
+      MANAGEMENT_BASE_URL: http://media-service:8085
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      DB_NAME: media_db
+      STORAGE_MODE: ${STORAGE_MODE:-local}
+      LOCAL_STORAGE_DIR: ${LOCAL_STORAGE_DIR:-uploads/media}
+      MEDIA_PUBLIC_BASE_URL: ${MEDIA_PUBLIC_BASE_URL}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_PUBLIC_BASE_URL: ${AWS_S3_PUBLIC_BASE_URL}
+
+  newsletter-service:
+    build: ./newsletter-service
+    depends_on: [mysql, rabbitmq, mailpit, discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://newsletter-service:8086
+      MANAGEMENT_BASE_URL: http://newsletter-service:8086
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      DB_NAME: newsletter_db
+      RABBITMQ_HOST: rabbitmq
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+
+  notification-service:
+    build: ./notification-service
+    depends_on: [mysql, rabbitmq, mailpit, discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://notification-service:8087
+      MANAGEMENT_BASE_URL: http://notification-service:8087
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      DB_NAME: notification_db
+      RABBITMQ_HOST: rabbitmq
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+
+  frontend-web:
+    build: ./frontend-web
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on: [api-gateway]
+
+volumes:
+  mysql-data:

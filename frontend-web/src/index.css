@@ -1,0 +1,262 @@
+/*
+ * This stylesheet defines shared visual rules for frontend-web/src/index.css.
+ * These comments identify why the styles are grouped here instead of repeated inside components.
+ */
+/* Base styles keep typography, layout, and theme behavior consistent across the frontend. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-slate-50 font-body text-slate-900 antialiased transition-colors duration-300;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  /* Ensure ALL inputs, textareas, and selects adapt to dark mode */
+  input, textarea, select {
+    @apply text-slate-900 placeholder-slate-400;
+  }
+  .dark input, .dark textarea, .dark select {
+    @apply text-slate-100 placeholder-slate-500;
+  }
+}
+
+@layer components {
+  /* Reusable card that adapts to theme */
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-soft transition-all duration-300;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .dark .card {
+    @apply border-slate-800 bg-slate-900;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply rounded-2xl bg-slate-100/60 p-5 transition-colors duration-300;
+  }
+  .dark .stat-card {
+    @apply bg-slate-800/50;
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all duration-200 outline-none focus:border-brand focus:ring-2 focus:ring-brand/20;
+  }
+  .dark .input-field {
+    @apply border-slate-700 bg-slate-800 focus:border-brand-400 focus:ring-brand-400/20;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-brand-800 hover:shadow-brand-glow active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-all duration-200 hover:bg-slate-50 active:scale-[0.98];
+  }
+  .dark .btn-secondary {
+    @apply border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-100 active:scale-[0.98];
+  }
+  .dark .btn-ghost {
+    @apply text-slate-300 hover:bg-slate-800;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium;
+  }
+  .badge-brand {
+    @apply badge bg-brand-50 text-brand-700;
+  }
+  .dark .badge-brand {
+    @apply bg-brand-950 text-brand-300;
+  }
+
+  /* Page heading */
+  .page-heading {
+    @apply text-sm font-medium uppercase tracking-widest text-brand;
+  }
+}
+
+/* Quill Editor dark mode support */
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+  border-color: rgb(226 232 240) !important;
+}
+.dark .ql-toolbar.ql-snow,
+.dark .ql-container.ql-snow {
+  border-color: rgb(51 65 85) !important;
+}
+.dark .ql-toolbar.ql-snow {
+  background: rgb(30 41 59);
+}
+.dark .ql-toolbar .ql-stroke {
+  stroke: rgb(148 163 184) !important;
+}
+.dark .ql-toolbar .ql-fill {
+  fill: rgb(148 163 184) !important;
+}
+.dark .ql-toolbar .ql-picker-label {
+  color: rgb(148 163 184) !important;
+}
+.dark .ql-toolbar .ql-picker-options {
+  background: rgb(30 41 59) !important;
+  border-color: rgb(51 65 85) !important;
+}
+.dark .ql-editor {
+  color: rgb(226 232 240);
+  background: rgb(15 23 42);
+}
+.dark .ql-editor.ql-blank::before {
+  color: rgb(100 116 139);
+}
+
+/* ─── Article / Prose typography ─────────────────────── */
+.prose {
+  @apply text-base leading-relaxed text-slate-700;
+  max-width: 75ch;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow: hidden;
+}
+.prose > * + * {
+  margin-top: 1.25em;
+}
+.prose h1 {
+  @apply font-display text-3xl font-bold leading-tight text-slate-900 mt-10 mb-4;
+}
+.prose h2 {
+  @apply font-display text-2xl font-bold leading-tight text-slate-900 mt-8 mb-3;
+}
+.prose h3 {
+  @apply font-display text-xl font-semibold text-slate-900 mt-6 mb-2;
+}
+.prose h4 {
+  @apply font-display text-lg font-semibold text-slate-900 mt-4 mb-2;
+}
+.prose p {
+  @apply leading-relaxed mb-4;
+  line-height: 1.8;
+}
+.prose strong {
+  @apply font-bold text-slate-900;
+}
+.prose em {
+  @apply italic;
+}
+.prose a {
+  @apply font-medium text-brand underline decoration-brand/30 underline-offset-2 transition-colors hover:text-brand-800 hover:decoration-brand/60;
+}
+.prose ul {
+  @apply my-4 ml-6 list-disc space-y-2;
+}
+.prose ol {
+  @apply my-4 ml-6 list-decimal space-y-2;
+}
+.prose li {
+  @apply pl-1 leading-relaxed;
+}
+.prose blockquote {
+  @apply my-6 border-l-4 border-brand/40 bg-slate-50 px-6 py-4 italic text-slate-600;
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+.prose pre {
+  @apply my-6 overflow-x-auto rounded-xl bg-slate-900 p-5 text-sm leading-relaxed text-slate-100;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+.prose code {
+  @apply rounded-md bg-slate-100 px-1.5 py-0.5 text-sm font-medium text-rose-600;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+.prose pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+.prose img {
+  @apply my-6 w-full rounded-xl shadow-md;
+}
+.prose hr {
+  @apply my-8 border-slate-200;
+}
+.prose table {
+  @apply my-6 w-full border-collapse text-sm;
+}
+.prose th {
+  @apply border-b-2 border-slate-200 bg-slate-50 px-4 py-2.5 text-left font-semibold text-slate-700;
+}
+.prose td {
+  @apply border-b border-slate-100 px-4 py-2.5;
+}
+.prose figure {
+  @apply my-6;
+}
+.prose figcaption {
+  @apply mt-2 text-center text-sm text-slate-500;
+}
+
+/* Prose dark mode */
+.dark .prose {
+  @apply text-slate-300;
+}
+.dark .prose h1, .dark .prose h2, .dark .prose h3, .dark .prose h4 {
+  @apply text-slate-100;
+}
+.dark .prose strong {
+  @apply text-slate-100;
+}
+.dark .prose a {
+  @apply text-brand-400 decoration-brand-400/30 hover:text-brand-300;
+}
+.dark .prose blockquote {
+  @apply border-brand-400/40 bg-slate-800/50 text-slate-400;
+}
+.dark .prose code {
+  @apply bg-slate-800 text-rose-400;
+}
+.dark .prose th {
+  @apply border-slate-700 bg-slate-800 text-slate-300;
+}
+.dark .prose td {
+  @apply border-slate-800;
+}
+.dark .prose hr {
+  @apply border-slate-800;
+}
+.dark .prose img {
+  @apply shadow-none;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-slate-300;
+}
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-700;
+}
+
