@@ -1,0 +1,30 @@
+# Java
+target/
+.idea/
+*.iml
+
+# --- STS / Eclipse Metadata ---
+.settings/
+.classpath
+.factorypath
+.project
+application.yml
+application-test.yml
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS / tooling
+.DS_Store
+Thumbs.db
+.env
+
+# Logs
+logs/
+*.log
+
+# Uploads
+uploads/
+
