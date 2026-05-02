@@ -1,1 +1,2 @@
-# InkWell Backend
+# InkWell-Backend
+The Blogging Platform Backend 
