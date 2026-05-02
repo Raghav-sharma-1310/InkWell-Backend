@@ -1,0 +1,31 @@
+# --- Build Output ---
+target/
+
+# --- IDE ---
+.idea/
+*.iml
+.settings/
+.classpath
+.factorypath
+.project
+
+# --- Config (sensitive) ---
+application.yml
+application-test.yml
+.env
+
+# --- Node (if frontend exists) ---
+node_modules/
+dist/
+.vite/
+
+# --- Logs ---
+logs/
+*.log
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Uploads ---
+uploads/
