@@ -122,6 +122,8 @@ pipeline {
               set -eu
               cd ${params.EC2_APP_DIR}
               test -f .env
+              # Update the IMAGE_TAG in the remote .env file to the current build number
+              sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${env.IMAGE_TAG}/" .env
               docker compose -f ${COMPOSE_FILE} --env-file .env pull
               docker compose -f ${COMPOSE_FILE} --env-file .env down
               docker compose -f ${COMPOSE_FILE} --env-file .env up -d
@@ -137,6 +139,12 @@ pipeline {
     always {
       // Keep the Jenkins agent tidy after image builds.
       sh 'docker logout || true'
+    }
+    success {
+      echo 'Inkwell deployment successful.'
+    }
+    failure {
+      echo 'Inkwell deployment failed. Check console logs.'
     }
   }
 }
