@@ -49,34 +49,34 @@ InkWell is a **full-stack blogging platform** built with a microservices archite
 ## Documentation Index
 
 ### Architecture
-- [Whole-Project Architecture](architecture/whole-project-architecture.md)
-- [Service Interaction Diagram](architecture/service-interaction-diagram.md)
-- [Deployment & Tools Diagram](architecture/deployment-tools-diagram.md)
+- [Whole-Project Architecture](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/architecture/whole-project-architecture.md)
+- [Service Interaction Diagram](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/architecture/service-interaction-diagram.md)
+- [Deployment & Tools Diagram](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/architecture/deployment-tools-diagram.md)
 
 ### Database
-- [Database Design](database/database-design.md)
-- [Database Service Ownership](database/database-service-ownership.md)
+- [Database Design](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/database/database-design.md)
+- [Database Service Ownership](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/database/database-service-ownership.md)
 
 ### Services
-- [API Gateway](services/api-gateway/overview.md)
-- [Auth Service](services/auth-service/overview.md)
-- [Post Service](services/post-service/overview.md)
-- [Comment Service](services/comment-service/overview.md)
-- [Category Service](services/category-service/overview.md)
-- [Media Service](services/media-service/overview.md)
-- [Newsletter Service](services/newsletter-service/overview.md)
-- [Notification Service](services/notification-service/overview.md)
-- [Payment Service](services/payment-service/overview.md)
-- [Discovery Service](services/discovery-service/overview.md)
-- [Admin Server](services/admin-server/overview.md)
+- [API Gateway](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/api-gateway/overview.md)
+- [Auth Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/auth-service/overview.md)
+- [Post Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/post-service/overview.md)
+- [Comment Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/comment-service/overview.md)
+- [Category Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/category-service/overview.md)
+- [Media Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/media-service/overview.md)
+- [Newsletter Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/newsletter-service/overview.md)
+- [Notification Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/notification-service/overview.md)
+- [Payment Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/payment-service/overview.md)
+- [Discovery Service](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/discovery-service/overview.md)
+- [Admin Server](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/services/admin-server/overview.md)
 
 ### Tools
-- [RabbitMQ](tools/rabbitmq.md)
-- [Redis](tools/redis.md)
-- [Mailpit](tools/mailhog.md)
-- [SonarQube](tools/sonarqube.md)
-- [Docker](tools/docker.md)
-- [Monitoring](tools/monitoring.md)
+- [RabbitMQ](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/tools/rabbitmq.md)
+- [Redis](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/tools/redis.md)
+- [Mailpit](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/tools/mailhog.md)
+- [SonarQube](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/tools/sonarqube.md)
+- [Docker](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/tools/docker.md)
+- [Monitoring](https://github.com/Raghav-sharma-1310/InkWell-Backend/blob/Microservices-core/docs/tools/monitoring.md)
 
 ---
 
