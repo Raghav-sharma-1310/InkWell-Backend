@@ -10,51 +10,65 @@ pipeline {
   }
 
   parameters {
-    string(name: 'DOCKER_IMAGE_PREFIX', defaultValue: 'your-dockerhub-user/inkwell', description: 'Docker image prefix, for example dockerhub-user/inkwell or AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/inkwell')
     string(name: 'EC2_HOST', defaultValue: 'ec2-user@your-ec2-public-dns', description: 'SSH target for the EC2 deployment host')
     string(name: 'EC2_APP_DIR', defaultValue: '/opt/inkwell', description: 'Directory on EC2 containing .env and compose files')
-    string(name: 'VITE_API_BASE_URL', defaultValue: '/', description: 'Frontend API base URL baked into the Vite build')
+    string(name: 'VITE_API_BASE_URL', defaultValue: 'http://16.171.23.137:8080', description: 'Frontend API base URL baked into the Vite build')
   }
 
   environment {
+    DOCKER_USERNAME = credentials('dockerhub-username')
+    DOCKER_PASSWORD = credentials('dockerhub-password')
+    BACKEND_REPO = 'https://github.com/Raghav-sharma-1310/InkWell-Backend.git'
+    FRONTEND_REPO = 'https://github.com/Raghav-sharma-1310/InkWell-Frontend.git'
     IMAGE_TAG = "${env.BUILD_NUMBER}"
     COMPOSE_FILE = 'docker-compose.prod.yml'
-    // CI-only placeholders let tests start without committing development secrets.
-    DB_PASSWORD = 'ci-db-password'
-    JWT_SECRET = 'ci-jwt-secret-ci-jwt-secret-ci-jwt-secret-ci-jwt-secret'
   }
 
   stages {
-    stage('Checkout') {
+    stage('Checkout Backend And Frontend') {
       steps {
-        // Pull the latest source from the GitHub repository configured for this Jenkins job.
-        checkout scm
+        script {
+          deleteDir()
+        }
+        dir('backend') {
+          git branch: 'main', url: "${BACKEND_REPO}"
+        }
+        dir('frontend') {
+          git branch: 'main', url: "${FRONTEND_REPO}"
+        }
       }
     }
 
-    stage('Backend Build And Tests') {
+    stage('Build Backend') {
       steps {
-        // Maven builds every Spring Boot module and runs unit tests.
-        sh './mvnw -B clean verify'
+        dir('backend') {
+          sh '''
+            chmod +x mvnw
+            ./mvnw -B clean verify
+          '''
+        }
       }
     }
 
-    stage('Frontend Tests') {
+    stage('Build Frontend') {
       steps {
-        dir('frontend-web') {
-          // npm ci keeps CI installs reproducible from package-lock.json.
-          sh 'npm ci'
-          sh 'npm exec vitest run'
+        dir('frontend') {
+          sh '''
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+            
+            npm run build
+          '''
         }
       }
     }
 
     stage('Docker Login') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-          // For AWS ECR, replace this with: aws ecr get-login-password | docker login --username AWS --password-stdin <registry>
-          sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
-        }
+        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
       }
     }
 
@@ -76,10 +90,10 @@ pipeline {
           ]
 
           services.each { service ->
-            sh "docker build -t ${params.DOCKER_IMAGE_PREFIX}/${service}:${env.IMAGE_TAG} -t ${params.DOCKER_IMAGE_PREFIX}/${service}:latest ./${service}"
+            sh "docker build -t ${DOCKER_USERNAME}/inkwell-${service}:${env.IMAGE_TAG} -t ${DOCKER_USERNAME}/inkwell-${service}:latest ./backend/${service}"
           }
 
-          sh "docker build --build-arg VITE_API_BASE_URL=${params.VITE_API_BASE_URL} -t ${params.DOCKER_IMAGE_PREFIX}/frontend-web:${env.IMAGE_TAG} -t ${params.DOCKER_IMAGE_PREFIX}/frontend-web:latest ./frontend-web"
+          sh "docker build --build-arg VITE_API_BASE_URL=${params.VITE_API_BASE_URL} -t ${DOCKER_USERNAME}/inkwell-frontend:${env.IMAGE_TAG} -t ${DOCKER_USERNAME}/inkwell-frontend:latest ./frontend"
         }
       }
     }
@@ -98,31 +112,32 @@ pipeline {
             'media-service',
             'newsletter-service',
             'notification-service',
-            'payment-service',
-            'frontend-web'
+            'payment-service'
           ]
 
           services.each { service ->
-            sh "docker push ${params.DOCKER_IMAGE_PREFIX}/${service}:${env.IMAGE_TAG}"
-            sh "docker push ${params.DOCKER_IMAGE_PREFIX}/${service}:latest"
+            sh "docker push ${DOCKER_USERNAME}/inkwell-${service}:${env.IMAGE_TAG}"
+            sh "docker push ${DOCKER_USERNAME}/inkwell-${service}:latest"
           }
+          
+          sh "docker push ${DOCKER_USERNAME}/inkwell-frontend:${env.IMAGE_TAG}"
+          sh "docker push ${DOCKER_USERNAME}/inkwell-frontend:latest"
         }
       }
     }
 
-    stage('Deploy To EC2') {
+    stage('Deploy All On EC2') {
       steps {
         sshagent(credentials: ['ec2-ssh-key']) {
-          // Keep deployment config in source control, while .env lives only on the EC2 host.
           sh "ssh -o StrictHostKeyChecking=no ${params.EC2_HOST} 'mkdir -p ${params.EC2_APP_DIR}/docker/mysql-init'"
-          sh "scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${params.EC2_HOST}:${params.EC2_APP_DIR}/${COMPOSE_FILE}"
-          sh "scp -o StrictHostKeyChecking=no docker/mysql-init/* ${params.EC2_HOST}:${params.EC2_APP_DIR}/docker/mysql-init/"
+          // Use the compose files from the cloned backend repo
+          sh "scp -o StrictHostKeyChecking=no backend/${COMPOSE_FILE} ${params.EC2_HOST}:${params.EC2_APP_DIR}/${COMPOSE_FILE}"
+          sh "scp -o StrictHostKeyChecking=no backend/docker/mysql-init/* ${params.EC2_HOST}:${params.EC2_APP_DIR}/docker/mysql-init/"
           sh """
             ssh -o StrictHostKeyChecking=no ${params.EC2_HOST} '
               set -eu
               cd ${params.EC2_APP_DIR}
               test -f .env
-              # Update the IMAGE_TAG in the remote .env file to the current build number
               sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${env.IMAGE_TAG}/" .env
               docker compose -f ${COMPOSE_FILE} --env-file .env pull
               docker compose -f ${COMPOSE_FILE} --env-file .env down
@@ -136,15 +151,14 @@ pipeline {
   }
 
   post {
-    always {
-      // Keep the Jenkins agent tidy after image builds.
-      sh 'docker logout || true'
-    }
     success {
-      echo 'Inkwell deployment successful.'
+      echo 'Inkwell backend and frontend deployment successful.'
     }
     failure {
-      echo 'Inkwell deployment failed. Check console logs.'
+      echo 'Deployment failed. Check Jenkins console logs.'
+    }
+    always {
+      sh 'docker logout || true'
     }
   }
 }

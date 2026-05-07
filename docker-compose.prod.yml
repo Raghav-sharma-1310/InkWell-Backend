@@ -99,7 +99,7 @@ services:
 
   discovery-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/discovery-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-discovery-service:${IMAGE_TAG:-latest}
     environment:
       <<: *common-env
       SERVER_PORT: 8761
@@ -115,7 +115,7 @@ services:
 
   admin-server:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/admin-server:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-admin-server:${IMAGE_TAG:-latest}
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -130,7 +130,7 @@ services:
 
   api-gateway:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/api-gateway:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-api-gateway:${IMAGE_TAG:-latest}
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -154,7 +154,7 @@ services:
 
   auth-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/auth-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-auth-service:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
         condition: service_healthy
@@ -189,7 +189,7 @@ services:
 
   post-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/post-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-post-service:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
         condition: service_healthy
@@ -210,7 +210,7 @@ services:
 
   category-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/category-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-category-service:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
         condition: service_healthy
@@ -228,7 +228,7 @@ services:
 
   comment-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/comment-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-comment-service:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
         condition: service_healthy
@@ -246,7 +246,7 @@ services:
 
   media-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/media-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-media-service:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
         condition: service_healthy
@@ -272,7 +272,7 @@ services:
 
   newsletter-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/newsletter-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-newsletter-service:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
         condition: service_healthy
@@ -296,7 +296,7 @@ services:
 
   notification-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/notification-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-notification-service:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
         condition: service_healthy
@@ -320,7 +320,7 @@ services:
 
   payment-service:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/payment-service:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-payment-service:${IMAGE_TAG:-latest}
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -335,7 +335,7 @@ services:
 
   frontend-web:
     <<: *service-defaults
-    image: ${DOCKER_IMAGE_PREFIX}/frontend-web:${IMAGE_TAG:-latest}
+    image: ${DOCKER_IMAGE_PREFIX}/inkwell-frontend:${IMAGE_TAG:-latest}
     depends_on:
       api-gateway:
         condition: service_healthy
