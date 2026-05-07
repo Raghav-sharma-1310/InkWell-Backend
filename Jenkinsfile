@@ -44,7 +44,7 @@ pipeline {
         dir('backend') {
           sh '''
             chmod +x mvnw
-            ./mvnw -B clean verify
+            ./mvnw -B clean verify spring-boot:repackage
           '''
         }
       }
