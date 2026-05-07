@@ -7,10 +7,8 @@ spring:
   boot:
     admin:
       client:
-        url: ${ADMIN_SERVER_URL:http://localhost:9090}
-        instance:
-          service-base-url: ${SERVICE_BASE_URL:http://localhost:${SERVER_PORT:8761}}
-          management-base-url: ${MANAGEMENT_BASE_URL:http://localhost:${SERVER_PORT:8761}}
+        url: ${ADMIN_SERVER_URL:http://admin-server:9090}
+        enabled: false
 
 eureka:
   client:
@@ -20,7 +18,7 @@ eureka:
     enable-self-preservation: false
     eviction-interval-timer-in-ms: 10000
   instance:
-    hostname: ${EUREKA_HOST:localhost}
+    hostname: ${EUREKA_HOST:discovery-service}
 
 management:
   endpoints:
