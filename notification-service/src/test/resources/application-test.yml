@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:notification_db;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  rabbitmq:
+    listener:
+      type: simple
+      simple:
+        auto-startup: false
+
+eureka:
+  client:
+    enabled: false

@@ -1,0 +1,11 @@
+graph TB
+    DevOps["DevOps / Developer"]
+    System["System"]
+
+    DevOps -->|"Monitor"| UC1["View Service Health"]
+    DevOps -->|"Inspect"| UC2["View JVM Metrics"]
+    DevOps -->|"Debug"| UC3["Change Log Levels"]
+    DevOps -->|"Review"| UC4["View Environment Properties"]
+
+    System -->|"Register"| UC5["Eureka Service Discovery"]
+    System -->|"Poll"| UC6["Actuator Health Checks"]

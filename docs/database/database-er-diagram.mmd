@@ -1,0 +1,268 @@
+erDiagram
+    users ||--o{ refresh_tokens : "has"
+    users ||--o{ email_verification_tokens : "has"
+    users ||--o{ payment_orders : "places"
+    users ||--o{ author_requests : "submits"
+    users ||--o{ auth_audit_logs : "tracked by"
+    feedback_reports ||--o{ feedback_messages : "contains"
+
+    posts ||--o{ post_tags : "tagged with"
+    posts ||--o{ post_likes : "liked by"
+    posts ||--o{ bookmarks : "bookmarked by"
+    posts ||--o{ post_history : "read by"
+
+    comments ||--o{ comment_likes : "liked by"
+
+    categories ||--o{ post_category_mappings : "maps"
+    tags ||--o{ post_tag_mappings : "maps"
+
+    subscribers ||--o{ campaigns : "receives"
+
+    notifications ||--o{ notif_audit_logs : "logged"
+
+    users {
+        UUID user_id PK
+        VARCHAR username UK
+        VARCHAR email UK
+        VARCHAR password_hash
+        VARCHAR full_name
+        ENUM role
+        VARCHAR bio
+        VARCHAR avatar_url
+        VARCHAR phone_number
+        ENUM provider
+        BOOLEAN is_active
+        ENUM subscription_tier
+        ENUM subscription_status
+        DATETIME subscription_end_date
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    refresh_tokens {
+        UUID id PK
+        VARCHAR token UK
+        UUID user_id FK
+        DATETIME expiry_date
+        BOOLEAN revoked
+    }
+
+    email_verification_tokens {
+        UUID id PK
+        VARCHAR token UK
+        UUID user_id FK
+        BOOLEAN used
+        DATETIME created_at
+    }
+
+    password_otps {
+        UUID id PK
+        VARCHAR email
+        VARCHAR otp
+        DATETIME expiry_time
+        BOOLEAN used
+    }
+
+    payment_orders {
+        UUID order_id PK
+        UUID user_id FK
+        VARCHAR gateway_order_id UK
+        VARCHAR gateway_payment_id
+        DECIMAL amount
+        VARCHAR currency
+        ENUM status
+        ENUM provider
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    auth_audit_logs {
+        UUID audit_id PK
+        UUID user_id
+        VARCHAR actor
+        VARCHAR action
+        VARCHAR entity_type
+        VARCHAR entity_id
+        VARCHAR details
+        DATETIME created_at
+    }
+
+    author_requests {
+        UUID request_id PK
+        UUID user_id FK
+        ENUM status
+        TEXT reason
+        DATETIME created_at
+        DATETIME reviewed_at
+    }
+
+    feedback_reports {
+        UUID report_id PK
+        UUID reporter_id
+        VARCHAR subject
+        TEXT description
+        ENUM status
+        VARCHAR priority
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    feedback_messages {
+        UUID message_id PK
+        UUID report_id FK
+        UUID sender_id
+        TEXT content
+        DATETIME created_at
+    }
+
+    posts {
+        UUID post_id PK
+        UUID author_id
+        VARCHAR title
+        VARCHAR slug UK
+        LONGTEXT content
+        VARCHAR excerpt
+        VARCHAR featured_image_url
+        ENUM status
+        ENUM visibility
+        INT read_time_min
+        BIGINT view_count
+        BIGINT likes_count
+        VARCHAR category_slug
+        BOOLEAN is_featured
+        BOOLEAN pinned
+        DATETIME created_at
+        DATETIME updated_at
+        DATETIME published_at
+        DATETIME scheduled_at
+    }
+
+    post_tags {
+        UUID post_id FK
+        VARCHAR tag_slug
+    }
+
+    post_likes {
+        UUID like_id PK
+        UUID post_id
+        UUID user_id
+        DATETIME created_at
+    }
+
+    bookmarks {
+        UUID bookmark_id PK
+        UUID user_id
+        UUID post_id
+        DATETIME created_at
+    }
+
+    post_history {
+        UUID history_id PK
+        UUID user_id
+        UUID post_id
+        DATETIME read_at
+    }
+
+    comments {
+        UUID comment_id PK
+        UUID post_id
+        UUID author_id
+        VARCHAR author_name
+        UUID parent_comment_id
+        TEXT content
+        BIGINT likes_count
+        ENUM status
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    comment_likes {
+        UUID like_id PK
+        UUID comment_id
+        UUID user_id
+        DATETIME created_at
+    }
+
+    categories {
+        UUID category_id PK
+        VARCHAR name UK
+        VARCHAR slug UK
+        VARCHAR description
+        UUID parent_category_id
+        BIGINT post_count
+        DATETIME created_at
+    }
+
+    tags {
+        UUID tag_id PK
+        VARCHAR name UK
+        VARCHAR slug UK
+        BIGINT post_count
+    }
+
+    post_category_mappings {
+        UUID id PK
+        UUID post_id
+        UUID category_id FK
+    }
+
+    post_tag_mappings {
+        UUID id PK
+        UUID post_id
+        UUID tag_id FK
+    }
+
+    media_files {
+        UUID media_id PK
+        UUID uploader_id
+        VARCHAR filename
+        VARCHAR original_name
+        VARCHAR url
+        VARCHAR mime_type
+        BIGINT size_kb
+        VARCHAR alt_text
+        UUID linked_post_id
+        DATETIME uploaded_at
+        BOOLEAN is_deleted
+    }
+
+    subscribers {
+        UUID subscriber_id PK
+        VARCHAR email UK
+        UUID user_id
+        VARCHAR full_name
+        ENUM status
+        DATETIME subscribed_at
+        DATETIME unsubscribed_at
+        VARCHAR token UK
+        VARCHAR preferences
+    }
+
+    campaigns {
+        UUID campaign_id PK
+        VARCHAR subject
+        TEXT content
+        DATETIME created_at
+    }
+
+    notifications {
+        UUID notification_id PK
+        UUID recipient_id
+        UUID actor_id
+        ENUM type
+        VARCHAR title
+        VARCHAR message
+        VARCHAR related_id
+        VARCHAR related_type
+        BOOLEAN is_read
+        DATETIME created_at
+    }
+
+    notif_audit_logs {
+        UUID audit_id PK
+        UUID actor_id
+        VARCHAR action
+        VARCHAR source
+        VARCHAR details
+        DATETIME created_at
+    }

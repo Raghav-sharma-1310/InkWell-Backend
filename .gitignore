@@ -1,31 +1,125 @@
-# --- Build Output ---
+# =========================
+# Java / Spring Boot
+# =========================
 target/
+build/
+out/
+bin/
 
-# --- IDE ---
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+
+# =========================
+# IDE / Editors
+# =========================
 .idea/
-*.iml
+.vscode/
 .settings/
+.project
 .classpath
 .factorypath
-.project
+.springBeans
+.sts4-cache/
 
-# --- Config (sensitive) ---
-application.yml
-application-test.yml
-.env
+*.iml
 
-# --- Node (if frontend exists) ---
+# =========================
+# Node / Frontend
+# =========================
 node_modules/
 dist/
 .vite/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# --- Logs ---
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+
+# =========================
+# Docker
+# =========================
+docker-data/
+*.tar
+
+# =========================
+# Logs
+# =========================
 logs/
 *.log
 
-# --- OS ---
+# =========================
+# Uploads / Media
+# =========================
+uploads/
+media-uploads/
+
+# =========================
+# SonarQube
+# =========================
+.scannerwork/
+sonar-report.json
+sonar_issues.json
+sonar_issues_new.json
+
+# =========================
+# OS Files
+# =========================
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# --- Uploads ---
-uploads/
+# =========================
+# Temporary Files
+# =========================
+tmp/
+temp/
+*.tmp
+*.swp
+
+# =========================
+# Jenkins
+# =========================
+.jenkins/
+
+# =========================
+# React / Vite cache
+# =========================
+.eslintcache
+
+# =========================
+# Testing
+# =========================
+coverage/
+test-output/
+
+# =========================
+# Mac / Linux
+# =========================
+*.pid
+*.seed
+
+# =========================
+# Generated diagrams
+# =========================
+docs/generated/

@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant FE as Frontend
+    participant GW as API Gateway
+    participant NC as NewsletterController
+    participant NS as NewsletterService
+    participant SR as SubscriberRepository
+    participant MS as MailService
+    participant DB as MySQL (newsletter_db)
+    participant MAIL as Mailpit
+
+    Note over FE,MAIL: Double Opt-In Subscribe Flow
+    FE->>GW: POST /api/newsletter/public/subscribe
+    GW->>NC: Forward (public, rate limited)
+    NC->>NS: subscribe(request)
+    NS->>SR: findByEmail(email)
+    alt Already subscribed
+        SR-->>NS: Subscriber found
+        NS-->>NC: Already subscribed
+    else New subscriber
+        NS->>NS: Generate unique token
+        NS->>SR: save(subscriber with status=PENDING)
+        SR->>DB: INSERT INTO subscribers
+        NS->>MS: send confirmation email with verify link
+        MS->>MAIL: SMTP email
+        NS-->>NC: Check your email
+    end
+    NC-->>GW: Response
+    GW-->>FE: Response
+
+    Note over FE,MAIL: Email Verification
+    FE->>GW: GET /api/newsletter/verify?token=xxx
+    GW->>NC: Forward
+    NC->>NS: verify(token)
+    NS->>SR: findByToken(token)
+    SR->>DB: SELECT
+    NS->>SR: save(subscriber with status=CONFIRMED)
+    SR->>DB: UPDATE
+    NS-->>NC: Subscription confirmed
+    NC-->>GW: 200 OK
+    GW-->>FE: Response

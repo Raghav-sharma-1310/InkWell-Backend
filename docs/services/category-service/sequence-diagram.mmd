@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant PS as Post Service
+    participant GW as API Gateway
+    participant CC as InternalCategoryController
+    participant CS as CategoryService
+    participant CR as CategoryRepository
+    participant TR as TagRepository
+    participant DB as MySQL (category_db)
+    participant RMQ as RabbitMQ
+
+    Note over PS,RMQ: Taxonomy Sync (Feign Call from Post Service)
+    PS->>GW: POST /api/categories/internal/posts/{postId}/taxonomy
+    Note right of GW: Internal path, no auth required
+    GW->>CC: Forward
+    CC->>CS: syncTaxonomy(postId, request)
+    CS->>CR: findBySlug(categorySlug)
+    CR->>DB: SELECT
+    CS->>TR: findBySlug(tagSlug) for each tag
+    TR->>DB: SELECT
+    CS->>DB: DELETE old mappings for postId
+    CS->>DB: INSERT new post_category_mappings
+    CS->>DB: INSERT new post_tag_mappings
+    CS->>CR: Update postCount
+    CS->>TR: Update postCount
+    CS-->>CC: OK
+    CC-->>GW: 200 OK
+    GW-->>PS: Success
+
+    Note over PS,RMQ: Post Deleted Event (RabbitMQ)
+    PS->>RMQ: publish("post.deleted", {postId})
+    RMQ->>CS: @RabbitListener onPostDeleted(payload)
+    CS->>DB: DELETE FROM post_category_mappings WHERE postId=?
+    CS->>DB: DELETE FROM post_tag_mappings WHERE postId=?
+    CS->>CR: Decrement postCount
+    CS->>TR: Decrement postCount

@@ -1,0 +1,72 @@
+classDiagram
+    note "User management is part of auth-service"
+
+    class AuthController {
+        +register()
+        +me()
+        +updateProfile()
+        +changePassword()
+        +deactivate()
+    }
+
+    class AdminUserController {
+        +getAllUsers()
+        +updateRole()
+        +suspend()
+        +reactivate()
+        +deleteUser()
+    }
+
+    class AdminConsoleController {
+        +removeAdminRole()
+        +deleteAdmin()
+    }
+
+    class PublicUserController {
+        +searchUsers()
+        +getAuthors()
+    }
+
+    class InternalUserController {
+        +getUser()
+    }
+
+    class AuthService {
+        -UserRepository userRepository
+        +register()
+        +updateProfile()
+        +changePassword()
+        +updateRole()
+        +toggleUserActive()
+        +deleteUser()
+        +searchUsers()
+    }
+
+    class AdminConsoleService {
+        -UserRepository userRepository
+        +removeAdminRole()
+        +deleteAdmin()
+    }
+
+    class UserRepository {
+        +findByEmailIgnoreCase()
+        +findByUsernameIgnoreCase()
+        +findByRole()
+    }
+
+    class User {
+        +UUID userId
+        +String username
+        +String email
+        +Role role
+        +boolean active
+    }
+
+    AuthController --> AuthService
+    AdminUserController --> AuthService
+    AdminConsoleController --> AdminConsoleService
+    PublicUserController --> AuthService
+    InternalUserController --> AuthService
+    AuthService --> UserRepository
+    AdminConsoleService --> UserRepository
+    UserRepository --> User

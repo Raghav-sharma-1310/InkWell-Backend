@@ -1,0 +1,16 @@
+graph TB
+    Author["Author"]
+    Admin["Admin"]
+    Guest["Guest"]
+    System["System"]
+
+    Author -->|"Upload"| UC1["Upload File (max 10MB)"]
+    Author -->|"List"| UC2["View Own Media"]
+    Author -->|"Delete"| UC3["Soft-Delete Own File"]
+
+    Admin -->|"List All"| UC4["View All Media Files"]
+    Admin -->|"Delete"| UC5["Hard-Delete Any File"]
+
+    Guest -->|"View"| UC6["Serve Public File"]
+
+    System -->|"Store"| UC7["Local or S3 Storage"]

@@ -1,0 +1,359 @@
+# Production compose file for one EC2 host.
+# Copy .env.example to .env on EC2, fill real values, then run:
+# docker compose -f docker-compose.prod.yml --env-file .env up -d
+
+x-common-env: &common-env
+  SPRING_PROFILES_ACTIVE: prod
+  EUREKA_URL: http://discovery-service:8761/eureka
+  ADMIN_SERVER_URL: http://admin-server:9090
+
+x-db-env: &db-env
+  DB_HOST: mysql
+  DB_PORT: 3306
+  DB_USERNAME: ${MYSQL_APP_USER}
+  DB_PASSWORD: ${MYSQL_APP_PASSWORD}
+
+x-rabbit-env: &rabbit-env
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: 5672
+  RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+  RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  networks:
+    - inkwell-net
+
+x-app-healthcheck: &app-healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 5
+  start_period: 60s
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      # Use strong, unique values in .env; never commit the real file.
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_APP_USER: ${MYSQL_APP_USER}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    networks:
+      - inkwell-net
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inkwell-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      # Bind management UI to localhost; tunnel with SSH when needed.
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    networks:
+      - inkwell-net
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    restart: unless-stopped
+    ports:
+      # Bind MailHog UI to localhost for production debugging only.
+      - "127.0.0.1:${MAIL_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8025"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inkwell-net
+
+  discovery-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/discovery-service:${IMAGE_TAG:-latest}
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8761
+      EUREKA_HOST: discovery-service
+      SERVICE_BASE_URL: http://discovery-service:8761
+      MANAGEMENT_BASE_URL: http://discovery-service:8761
+    ports:
+      # Eureka is localhost-only for EC2 verification and SSH tunneling.
+      - "127.0.0.1:${DISCOVERY_PORT:-8761}:8761"
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8761/actuator/health || exit 1"]
+
+  admin-server:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/admin-server:${IMAGE_TAG:-latest}
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      SERVER_PORT: 9090
+    ports:
+      - "127.0.0.1:${ADMIN_SERVER_PORT:-9090}:9090"
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9090/actuator/health || exit 1"]
+
+  api-gateway:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/api-gateway:${IMAGE_TAG:-latest}
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8080
+      SERVICE_BASE_URL: http://api-gateway:8080
+      MANAGEMENT_BASE_URL: http://api-gateway:8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      FRONTEND_URL: ${FRONTEND_URL}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      # Public access — the API gateway is the entry point for all external traffic.
+      - "${API_GATEWAY_PORT:-8080}:8080"
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health || exit 1"]
+
+  auth-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/auth-service:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: [*common-env, *db-env]
+      SERVER_PORT: 8081
+      DB_NAME: auth_db
+      REDIS_HOST: redis
+      PUBLIC_GATEWAY_URL: ${PUBLIC_GATEWAY_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health || exit 1"]
+
+  post-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/post-service:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8082
+      DB_NAME: post_db
+      REDIS_HOST: redis
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8082/actuator/health || exit 1"]
+
+  category-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/category-service:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8083
+      DB_NAME: category_db
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8083/actuator/health || exit 1"]
+
+  comment-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/comment-service:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8084
+      DB_NAME: comment_db
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8084/actuator/health || exit 1"]
+
+  media-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/media-service:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: [*common-env, *db-env]
+      SERVER_PORT: 8085
+      DB_NAME: media_db
+      STORAGE_MODE: ${STORAGE_MODE}
+      LOCAL_STORAGE_DIR: /app/uploads/media
+      MEDIA_PUBLIC_BASE_URL: ${MEDIA_PUBLIC_BASE_URL}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_PUBLIC_BASE_URL: ${AWS_S3_PUBLIC_BASE_URL}
+    volumes:
+      - media-uploads:/app/uploads/media
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8085/actuator/health || exit 1"]
+
+  newsletter-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/newsletter-service:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8086
+      DB_NAME: newsletter_db
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      PUBLIC_GATEWAY_URL: ${PUBLIC_GATEWAY_URL}
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8086/actuator/health || exit 1"]
+
+  notification-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/notification-service:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8087
+      DB_NAME: notification_db
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8087/actuator/health || exit 1"]
+
+  payment-service:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/payment-service:${IMAGE_TAG:-latest}
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8088
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+    healthcheck:
+      <<: *app-healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8088/actuator/health || exit 1"]
+
+  frontend-web:
+    <<: *service-defaults
+    image: ${DOCKER_IMAGE_PREFIX}/frontend-web:${IMAGE_TAG:-latest}
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_HTTP_PORT:-80}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  inkwell-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:
+  rabbitmq-data:
+  media-uploads:

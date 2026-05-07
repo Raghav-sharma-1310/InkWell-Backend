@@ -1,0 +1,26 @@
+# Production profile. Values are supplied by docker-compose.prod.yml from .env.
+spring:
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://admin-server:9090}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://discovery-service:8761/eureka}
+
+app:
+  razorpay:
+    # Required only when payment endpoints are enabled.
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never

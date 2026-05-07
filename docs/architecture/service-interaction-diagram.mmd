@@ -1,0 +1,28 @@
+graph LR
+    subgraph Sync["Synchronous REST via Feign"]
+        POST_S["Post Service"] -->|"POST /api/categories/internal/posts/{id}/taxonomy"| CAT_S["Category Service"]
+        COM_S["Comment Service"] -->|"GET /api/posts/internal/{id}/meta"| POST_S2["Post Service"]
+        NOT_S["Notification Service"] -->|"GET /api/auth/internal/users/{id}"| AUTH_S["Auth Service"]
+        NOT_S -->|"GET /api/auth/public/search"| AUTH_S
+    end
+
+    subgraph Async["Async Events via RabbitMQ"]
+        direction TB
+        EX["inkwell.exchange<br/>(DirectExchange)"]
+
+        POST_P["Post Service<br/>(Producer)"] -->|"post.published"| EX
+        POST_P -->|"post.deleted"| EX
+        COM_P["Comment Service<br/>(Producer)"] -->|"comment.new"| EX
+        COM_P -->|"comment.reply"| EX
+        NOT_P["Notification Service<br/>(Producer)"] -->|"admin.broadcast"| EX
+
+        EX -->|"post.published"| Q1["post-published-notification-queue"]
+        EX -->|"post.deleted"| Q2["category-post-deleted-queue"]
+        EX -->|"comment.new"| Q3["comment-notification-queue"]
+        EX -->|"comment.reply"| Q4["reply-notification-queue"]
+
+        Q1 --> NOT_C["Notification Service<br/>(Consumer)"]
+        Q2 --> CAT_C["Category Service<br/>(Consumer)"]
+        Q3 --> NOT_C
+        Q4 --> NOT_C
+    end

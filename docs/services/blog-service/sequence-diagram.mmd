@@ -1,0 +1,59 @@
+sequenceDiagram
+    participant FE as Frontend
+    participant GW as API Gateway
+    participant PC as AuthorPostController
+    participant PS as PostService
+    participant PR as PostRepository
+    participant CC as CategoryClient
+    participant DB as MySQL (post_db)
+    participant RMQ as RabbitMQ
+    participant RD as Redis
+
+    Note over FE,RD: Create & Publish Post Flow
+    FE->>GW: POST /api/posts/author/ + Bearer Token
+    GW->>GW: Validate JWT, check AUTHOR role
+    GW->>PC: Forward with X-User-Id, X-Username
+    PC->>PS: createPost(request, principal)
+    PS->>PS: HtmlSanitizer.sanitize(content)
+    PS->>PS: SlugUtil.createSlug(title)
+    PS->>PS: ReadTimeUtil.calculate(content)
+    PS->>PR: save(post)
+    PR->>DB: INSERT INTO posts
+    DB-->>PR: saved
+    PS->>CC: syncTaxonomy(postId, categories, tags)
+    CC-->>PS: OK
+    PS-->>PC: PostResponse
+    PC-->>GW: 201 Created
+    GW-->>FE: Response
+
+    Note over FE,RD: Publish Post
+    FE->>GW: PATCH /api/posts/author/{id}/publish
+    GW->>PC: Forward
+    PC->>PS: publishPost(id, principal)
+    PS->>PR: findById(id)
+    PR->>DB: SELECT
+    PS->>PS: verify author owns post
+    PS->>PR: save(post with status=PUBLISHED)
+    PR->>DB: UPDATE
+    PS->>RMQ: send("post.published", payload)
+    PS->>RD: evict cache
+    PS-->>PC: PostResponse
+    PC-->>GW: 200 OK
+    GW-->>FE: Response
+
+    Note over FE,RD: Public Read with Caching
+    FE->>GW: GET /api/posts/public/{slug}
+    GW->>PC: Forward (public path)
+    PC->>RD: Check cache
+    alt Cache hit
+        RD-->>PC: cached PostResponse
+    else Cache miss
+        PC->>PS: getBySlug(slug)
+        PS->>PR: findBySlug(slug)
+        PR->>DB: SELECT
+        PS->>PS: incrementViewCount()
+        PS-->>PC: PostResponse
+        PC->>RD: Store in cache
+    end
+    PC-->>GW: 200 OK
+    GW-->>FE: Response

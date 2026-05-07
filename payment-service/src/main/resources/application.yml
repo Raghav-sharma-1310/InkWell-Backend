@@ -1,0 +1,27 @@
+server:
+  port: ${SERVER_PORT:8088}
+
+spring:
+  application:
+    name: payment-service
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://localhost:9090}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+app:
+  razorpay:
+    # Razorpay credentials must come from .env/Jenkins/EC2; do not commit payment secrets.
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

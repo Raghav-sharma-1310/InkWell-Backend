@@ -1,0 +1,20 @@
+{
+  "theme": "default",
+  "themeVariables": {
+    "fontSize": "24px",
+    "fontFamily": "Arial, sans-serif"
+  },
+  "er": {
+    "diagramPadding": 60,
+    "entityPadding": 30,
+    "useMaxWidth": false,
+    "fontSize": 24,
+    "layoutDirection": "LR"
+  },
+  "flowchart": {
+    "diagramPadding": 30,
+    "useMaxWidth": false,
+    "htmlLabels": true,
+    "curve": "basis"
+  }
+}

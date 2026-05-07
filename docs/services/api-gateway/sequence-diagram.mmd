@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant Client as React Frontend
+    participant GW as API Gateway
+    participant JWT as JwtService
+    participant EUR as Eureka
+    participant DS as Downstream Service
+    participant Redis as Redis
+
+    Client->>GW: HTTP Request + Bearer Token
+    GW->>GW: JwtAuthenticationFilter.filter()
+    alt OPTIONS request
+        GW-->>Client: 200 OK (CORS preflight)
+    end
+
+    alt Public path & no token
+        GW->>EUR: Resolve service via lb://
+        EUR-->>GW: Service instance
+        GW->>DS: Forward request (no headers)
+        DS-->>GW: Response
+        GW-->>Client: Response
+    end
+
+    alt Has Bearer token
+        GW->>JWT: parseToken(jwt)
+        alt Invalid/Expired token
+            JWT-->>GW: JwtException
+            GW-->>Client: 401 Unauthorized
+        end
+        JWT-->>GW: Claims (userId, role, email, etc.)
+
+        alt Requires ADMIN & role != ADMIN
+            GW-->>Client: 403 Forbidden
+        end
+        alt Requires AUTHOR & role not in [AUTHOR, ADMIN]
+            GW-->>Client: 403 Forbidden
+        end
+        alt Requires PREMIUM & no active PRO sub
+            GW-->>Client: 403 Forbidden
+        end
+
+        GW->>GW: Inject X-User-* headers
+        GW->>EUR: Resolve service
+        EUR-->>GW: Service instance
+
+        alt Rate limited path (newsletter)
+            GW->>Redis: Check rate limit
+            Redis-->>GW: Allow/Deny
+        end
+
+        GW->>DS: Forward with X-Headers
+        alt Downstream fails
+            GW->>GW: CircuitBreaker triggers
+            GW-->>Client: Fallback response
+        end
+        DS-->>GW: Response
+        GW-->>Client: Response
+    end

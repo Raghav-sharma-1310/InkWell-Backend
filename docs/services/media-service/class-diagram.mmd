@@ -1,0 +1,69 @@
+classDiagram
+    class MediaController {
+        -MediaService service
+        +upload()
+        +listMine()
+        +listAll()
+        +delete()
+        +serveFile()
+    }
+
+    class MediaService {
+        -MediaRepository repository
+        -StorageService storageService
+        +upload()
+        +listByUploader()
+        +listAll()
+        +softDelete()
+        +hardDelete()
+        +getFile()
+    }
+
+    class StorageService {
+        <<interface>>
+        +store(file) StoredFile
+        +delete(filename)
+        +load(filename) Resource
+    }
+
+    class LocalStorageService {
+        +store()
+        +delete()
+        +load()
+    }
+
+    class S3StorageService {
+        +store()
+        +delete()
+        +load()
+    }
+
+    class MediaRepository {
+        +findByUploaderId()
+        +findById()
+    }
+
+    class MediaFile {
+        +UUID mediaId
+        +UUID uploaderId
+        +String filename
+        +String originalName
+        +String url
+        +String mimeType
+        +long sizeKb
+        +boolean deleted
+    }
+
+    class StoredFile {
+        +String path
+        +String publicUrl
+    }
+
+    MediaController --> MediaService
+    MediaService --> MediaRepository
+    MediaService --> StorageService
+    StorageService <|.. LocalStorageService
+    StorageService <|.. S3StorageService
+    LocalStorageService ..> FileSystem : "local disk"
+    S3StorageService ..> AWS_S3 : "cloud storage"
+    MediaRepository --> MediaFile

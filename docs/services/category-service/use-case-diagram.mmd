@@ -1,0 +1,17 @@
+graph TB
+    Guest["Guest"]
+    Admin["Admin"]
+    System["System / Post Service"]
+
+    Guest -->|"Browse"| UC1["List Categories"]
+    Guest -->|"View"| UC2["Get Category Details"]
+    Guest -->|"Tags"| UC3["List Tags"]
+
+    Admin -->|"Create"| UC4["Create Category"]
+    Admin -->|"Update"| UC5["Update Category"]
+    Admin -->|"Delete"| UC6["Delete Category"]
+    Admin -->|"Create Tag"| UC7["Create Tag"]
+    Admin -->|"Delete Tag"| UC8["Delete Tag"]
+
+    System -->|"Sync"| UC9["Taxonomy Sync (Feign)"]
+    System -->|"Cleanup"| UC10["Post Deleted Event (RabbitMQ)"]

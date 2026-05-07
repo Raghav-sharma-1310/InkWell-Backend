@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant CS as Comment Service
+    participant RMQ as RabbitMQ
+    participant NS as NotificationService
+    participant AC as AuthClient
+    participant NR as NotificationRepository
+    participant MS as MailService
+    participant DB as MySQL (notification_db)
+    participant MAIL as Mailpit
+
+    Note over CS,MAIL: Comment Notification Flow (Event-Driven)
+    CS->>RMQ: publish("comment.new", payload)
+    RMQ->>NS: @RabbitListener onComment(payload)
+    NS->>NR: save(notification)
+    NR->>DB: INSERT INTO notifications
+    NS->>AC: getUser(recipientId)
+    AC-->>NS: UserResponse (email)
+    NS->>MS: send(email, title, htmlBody)
+    MS->>MAIL: SMTP email
+
+    Note over CS,MAIL: Admin Broadcast Flow
+    participant FE as Frontend
+    participant GW as API Gateway
+    participant ANC as AdminNotificationController
+
+    FE->>GW: POST /api/admin/notifications/broadcast
+    GW->>ANC: Forward (ADMIN role)
+    ANC->>NS: broadcast(request, principal)
+    NS->>AC: searchUsers("")
+    AC-->>NS: List of all users
+    loop For each user
+        NS->>NR: save(notification)
+        NR->>DB: INSERT
+        NS->>AC: getUser(userId)
+        NS->>MS: send(email, title, html)
+    end
+    NS->>DB: INSERT INTO audit_logs
+    NS->>RMQ: publish("admin.broadcast", payload)
+    NS-->>ANC: void
+    ANC-->>GW: 200 OK
+    GW-->>FE: Response

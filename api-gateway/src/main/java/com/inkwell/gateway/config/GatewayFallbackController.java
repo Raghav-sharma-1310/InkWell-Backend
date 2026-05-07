@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 /* This class groups gateway fallback behavior so downstream outages do not break the gateway contract. */
 public class GatewayFallbackController {
 
+    @SuppressWarnings("java:S3752")
     @RequestMapping("/fallback")
     // Performs the fallback workflow so circuit breaker failures return a predictable response.
     public Mono<ResponseEntity<Map<String, Object>>> fallback(ServerWebExchange exchange) {

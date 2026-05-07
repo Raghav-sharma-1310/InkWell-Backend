@@ -1,0 +1,4 @@
+# The Dockerfile only needs the packaged Spring Boot jar.
+target/*
+!target/*.jar
+.env

@@ -1,0 +1,42 @@
+classDiagram
+    class JwtAuthenticationFilter {
+        -JwtService jwtService
+        -ObjectMapper objectMapper
+        -AntPathMatcher pathMatcher
+        +filter(exchange, chain) Mono~Void~
+        +getOrder() int
+        -isPublicPath(path) boolean
+        -requiresAdmin(path) boolean
+        -requiresAuthor(path) boolean
+        -requiresPremium(path) boolean
+        -handleMissingToken() Mono~Void~
+        -authorizationFailure() Mono~Void~
+        -withGatewayHeaders() ServerHttpRequest
+        -writeUnauthorized() Mono~Void~
+        -writeForbidden() Mono~Void~
+    }
+
+    class JwtService {
+        -String secret
+        +parseToken(token) Claims
+    }
+
+    class RateLimiterConfig {
+        +userOrIpKeyResolver() KeyResolver
+    }
+
+    class SwaggerConfig {
+        +apis() List~GroupedOpenApi~
+    }
+
+    class ApiGatewayInfoController {
+        +info() Map
+    }
+
+    class GatewayFallbackController {
+        +fallback() ResponseEntity
+    }
+
+    JwtAuthenticationFilter --> JwtService : uses
+    JwtAuthenticationFilter ..> Redis : "rate limiting (indirect)"
+    RateLimiterConfig ..> Redis : "KeyResolver"

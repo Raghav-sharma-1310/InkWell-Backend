@@ -1,0 +1,42 @@
+sequenceDiagram
+    participant FE as Frontend
+    participant GW as API Gateway
+    participant AC as AuthController / AdminUserController
+    participant AS as AuthService
+    participant UR as UserRepository
+    participant DB as MySQL (auth_db)
+
+    Note over FE,DB: Get User Profile
+    FE->>GW: GET /api/auth/me + Bearer Token
+    GW->>AC: Forward with X-Headers
+    AC->>AS: me(principal)
+    AS->>UR: findById(userId)
+    UR->>DB: SELECT FROM users
+    DB-->>UR: User
+    AS-->>AC: ProfileResponse
+    AC-->>GW: 200 OK
+    GW-->>FE: Profile data
+
+    Note over FE,DB: Admin Update Role
+    FE->>GW: PATCH /api/auth/admin/users/{id}/role
+    GW->>GW: Validate JWT + ADMIN role
+    GW->>AC: Forward
+    AC->>AS: updateRole(id, newRole)
+    AS->>UR: findById(id)
+    UR->>DB: SELECT
+    AS->>UR: save(user with new role)
+    UR->>DB: UPDATE users SET role=?
+    AS-->>AC: UserResponse
+    AC-->>GW: 200 OK
+    GW-->>FE: Updated user
+
+    Note over FE,DB: Internal User Fetch (Feign)
+    participant NS as Notification Service
+    NS->>GW: GET /api/auth/internal/users/{id}
+    Note right of GW: Internal path bypass
+    GW->>AC: Forward
+    AC->>AS: getUserById(id)
+    AS->>UR: findById(id)
+    UR->>DB: SELECT
+    AS-->>AC: UserResponse
+    AC-->>NS: User data (email, name)

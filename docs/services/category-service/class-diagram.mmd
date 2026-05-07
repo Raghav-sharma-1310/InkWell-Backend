@@ -1,0 +1,67 @@
+classDiagram
+    class PublicCategoryController {
+        -CategoryService service
+        +listCategories()
+        +getBySlug()
+        +listTags()
+    }
+
+    class AdminCategoryController {
+        -CategoryService service
+        +createCategory()
+        +updateCategory()
+        +deleteCategory()
+        +createTag()
+        +deleteTag()
+    }
+
+    class InternalCategoryController {
+        -CategoryService service
+        +syncTaxonomy()
+    }
+
+    class CategoryService {
+        -CategoryRepository categoryRepo
+        -TagRepository tagRepo
+        -PostCategoryMappingRepository pcmRepo
+        -PostTagMappingRepository ptmRepo
+        +listCategories()
+        +getBySlug()
+        +createCategory()
+        +updateCategory()
+        +deleteCategory()
+        +syncTaxonomy()
+        +onPostDeleted()
+    }
+
+    class CategoryRepository {
+        +findBySlug()
+        +findByNameIgnoreCase()
+    }
+
+    class TagRepository {
+        +findBySlug()
+    }
+
+    class Category {
+        +UUID categoryId
+        +String name
+        +String slug
+        +long postCount
+    }
+
+    class Tag {
+        +UUID tagId
+        +String name
+        +String slug
+        +long postCount
+    }
+
+    PublicCategoryController --> CategoryService
+    AdminCategoryController --> CategoryService
+    InternalCategoryController --> CategoryService
+    CategoryService --> CategoryRepository
+    CategoryService --> TagRepository
+    CategoryService ..> RabbitMQ : "listens post.deleted"
+    CategoryRepository --> Category
+    TagRepository --> Tag

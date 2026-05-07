@@ -1,0 +1,19 @@
+graph TB
+    User["Authenticated User"]
+    Admin["Admin"]
+    System["System / RabbitMQ"]
+
+    User -->|"View"| UC1["List My Notifications"]
+    User -->|"Count"| UC2["Get Unread Count"]
+    User -->|"Read"| UC3["Mark Notification Read"]
+    User -->|"Read All"| UC4["Mark All Read"]
+    User -->|"Clean"| UC5["Delete Read Notifications"]
+
+    Admin -->|"Broadcast"| UC6["Send Admin Broadcast"]
+    Admin -->|"Audit"| UC7["View Audit Logs"]
+    Admin -->|"Delete"| UC8["Delete Notification"]
+    Admin -->|"Delete Broadcast"| UC9["Delete Broadcast Group"]
+
+    System -->|"comment.new"| UC10["Create Comment Notification + Email"]
+    System -->|"comment.reply"| UC11["Create Reply Notification + Email"]
+    System -->|"post.published"| UC12["Create Audit Log Entry"]

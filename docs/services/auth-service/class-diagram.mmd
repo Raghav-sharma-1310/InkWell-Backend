@@ -1,0 +1,140 @@
+classDiagram
+    class AuthController {
+        -AuthService authService
+        -OtpService otpService
+        +register()
+        +login()
+        +refresh()
+        +logout()
+        +me()
+        +updateProfile()
+        +changePassword()
+        +deactivate()
+        +forgotPassword()
+        +verifyOtp()
+        +resetPassword()
+    }
+
+    class AdminUserController {
+        -AuthService authService
+        +getAllUsers()
+        +updateRole()
+        +suspend()
+        +reactivate()
+        +deleteUser()
+    }
+
+    class AdminConsoleController {
+        -AdminConsoleService adminConsoleService
+        +removeAdminRole()
+        +deleteAdmin()
+    }
+
+    class PaymentController {
+        -PaymentService paymentService
+        +createOrder()
+        +verifyPayment()
+    }
+
+    class AuthService {
+        -UserRepository userRepository
+        -UserMapper userMapper
+        -PasswordEncoder passwordEncoder
+        -JwtService jwtService
+        -RefreshTokenService refreshTokenService
+        -EmailService emailService
+        -LoginRateLimiter loginRateLimiter
+        -AuditLogService auditLogService
+        +register()
+        +login()
+        +refresh()
+        +resetPassword()
+        +updateProfile()
+        +changePassword()
+        +updateRole()
+        +toggleUserActive()
+        +deleteUser()
+        +searchUsers()
+        +getAuthors()
+    }
+
+    class AdminConsoleService {
+        -UserRepository userRepository
+        -UserMapper userMapper
+        -RefreshTokenService refreshTokenService
+        -AuditLogService auditLogService
+        +removeAdminRole()
+        +deleteAdmin()
+    }
+
+    class PaymentService {
+        -PaymentGatewayClient gatewayClient
+        -PaymentOrderRepository orderRepository
+        -UserRepository userRepository
+        +createOrder()
+        +verifyPayment()
+    }
+
+    class EmailService {
+        +sendWelcomeEmail()
+        +sendLoginNotificationEmail()
+        +sendOtpEmail()
+        +sendVerificationEmail()
+    }
+
+    class JwtService {
+        +generateAccessToken()
+        +parseToken()
+    }
+
+    class RefreshTokenService {
+        +createForUser()
+        +verify()
+        +revoke()
+        +revokeAll()
+    }
+
+    class OAuth2AccountService {
+        +loadUser()
+    }
+
+    class UserRepository {
+        +findByEmailIgnoreCase()
+        +findByUsernameIgnoreCase()
+        +findByRole()
+        +existsByEmailIgnoreCase()
+    }
+
+    class User {
+        +UUID userId
+        +String username
+        +String email
+        +String passwordHash
+        +Role role
+        +AuthProvider provider
+        +boolean active
+        +SubscriptionTier subscriptionTier
+    }
+
+    class SecurityConfig {
+        +securityFilterChain()
+        +passwordEncoder()
+    }
+
+    class GatewayAuthenticationFilter {
+        +doFilterInternal()
+    }
+
+    AuthController --> AuthService
+    AdminUserController --> AuthService
+    AdminConsoleController --> AdminConsoleService
+    PaymentController --> PaymentService
+    AuthService --> UserRepository
+    AuthService --> JwtService
+    AuthService --> RefreshTokenService
+    AuthService --> EmailService
+    AdminConsoleService --> UserRepository
+    PaymentService --> UserRepository
+    UserRepository --> User
+    SecurityConfig --> GatewayAuthenticationFilter
+    OAuth2AccountService --> UserRepository

@@ -1,0 +1,17 @@
+# Production profile. Values are supplied by docker-compose.prod.yml from .env.
+spring:
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://admin-server:9090}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://discovery-service:8761/eureka}
+
+management:
+  endpoint:
+    health:
+      # Avoid leaking dependency details in public production responses.
+      show-details: never

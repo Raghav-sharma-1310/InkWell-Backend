@@ -21,7 +21,8 @@ public class SecurityConfig {
 	@Bean
 	// Provides security filter chain wiring so the framework can apply the expected
 	// runtime behavior.
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	@SuppressWarnings("java:S4502")
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(auth -> auth
 						.dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ASYNC,

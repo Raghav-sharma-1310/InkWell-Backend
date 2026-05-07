@@ -1,0 +1,34 @@
+# Production profile. Values are supplied by docker-compose.prod.yml from .env.
+spring:
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://admin-server:9090}
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            # FRONTEND_URL should be the public EC2 DNS/domain, for example https://blog.example.com.
+            allowedOrigins:
+              - ${FRONTEND_URL}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://discovery-service:8761/eureka}
+
+security:
+  jwt:
+    # Required in production; use a long random value.
+    secret: ${JWT_SECRET}
+
+management:
+  endpoint:
+    health:
+      show-details: never

@@ -1,0 +1,224 @@
+%% ============================================================
+%%  InkWell Platform - Complete Use Case Diagram
+%%  Actors: Visitor, Reader, Author, Admin, System
+%%  Layout: Left-to-Right for vertical flow
+%% ============================================================
+
+graph LR
+    %% --- ACTORS ---
+    VISITOR(("Visitor"))
+    READER(("Reader"))
+    AUTHOR(("Author"))
+    ADMIN(("Admin"))
+    SYSTEM(("System"))
+
+    classDef authUC fill:#4F46E5,stroke:#3730A3,color:#fff,rx:12
+    classDef postUC fill:#0891B2,stroke:#0E7490,color:#fff,rx:12
+    classDef commentUC fill:#059669,stroke:#047857,color:#fff,rx:12
+    classDef categoryUC fill:#D97706,stroke:#B45309,color:#fff,rx:12
+    classDef mediaUC fill:#7C3AED,stroke:#6D28D9,color:#fff,rx:12
+    classDef newsletterUC fill:#DB2777,stroke:#BE185D,color:#fff,rx:12
+    classDef notifUC fill:#DC2626,stroke:#B91C1C,color:#fff,rx:12
+    classDef paymentUC fill:#EA580C,stroke:#C2410C,color:#fff,rx:12
+    classDef feedbackUC fill:#0D9488,stroke:#0F766E,color:#fff,rx:12
+    classDef adminUC fill:#4338CA,stroke:#3730A3,color:#fff,rx:12
+    classDef actorStyle fill:#1E293B,stroke:#0F172A,color:#fff,rx:50
+
+    class VISITOR,READER,AUTHOR,ADMIN,SYSTEM actorStyle
+
+    subgraph AUTH["Authentication and User Management"]
+        direction TB
+        UC_REGISTER["Register Account"]:::authUC
+        UC_LOGIN["Login with JWT"]:::authUC
+        UC_LOGOUT["Logout"]:::authUC
+        UC_VERIFY_EMAIL["Verify Email"]:::authUC
+        UC_FORGOT_PWD["Forgot Password via OTP"]:::authUC
+        UC_RESET_PWD["Reset Password"]:::authUC
+        UC_VIEW_PROFILE["View Profile"]:::authUC
+        UC_EDIT_PROFILE["Edit Profile"]:::authUC
+        UC_CHANGE_AVATAR["Change Avatar"]:::authUC
+        UC_REQ_AUTHOR["Request Author Role"]:::authUC
+        UC_OAUTH_LOGIN["OAuth Login"]:::authUC
+    end
+
+    subgraph SUBSCRIPTION["Subscription and Payments"]
+        direction TB
+        UC_VIEW_PLANS["View Subscription Plans"]:::paymentUC
+        UC_PURCHASE_PRO["Purchase PRO Plan"]:::paymentUC
+        UC_VERIFY_PAYMENT["Verify Payment"]:::paymentUC
+        UC_VIEW_SUB_STATUS["View Subscription Status"]:::paymentUC
+    end
+
+    subgraph POSTS["Post Management"]
+        direction TB
+        UC_CREATE_POST["Create Post"]:::postUC
+        UC_EDIT_POST["Edit Post"]:::postUC
+        UC_DELETE_POST["Delete Post"]:::postUC
+        UC_PUBLISH_POST["Publish Post"]:::postUC
+        UC_SCHEDULE_POST["Schedule Post"]:::postUC
+        UC_BROWSE_POSTS["Browse and Search Posts"]:::postUC
+        UC_READ_POST["Read Full Post"]:::postUC
+        UC_LIKE_POST["Like or Unlike Post"]:::postUC
+        UC_BOOKMARK_POST["Bookmark Post"]:::postUC
+        UC_VIEW_HISTORY["View Reading History"]:::postUC
+        UC_FOLLOW_AUTHOR["Follow or Unfollow Author"]:::postUC
+        UC_VIEW_PREMIUM["Access Premium Content"]:::postUC
+    end
+
+    subgraph COMMENTS["Comments"]
+        direction TB
+        UC_ADD_COMMENT["Add Comment"]:::commentUC
+        UC_REPLY_COMMENT["Reply to Comment"]:::commentUC
+        UC_EDIT_COMMENT["Edit Comment"]:::commentUC
+        UC_DELETE_COMMENT["Delete Comment"]:::commentUC
+        UC_LIKE_COMMENT["Like or Unlike Comment"]:::commentUC
+    end
+
+    subgraph CATEGORIES["Categories and Tags"]
+        direction TB
+        UC_CREATE_CATEGORY["Create Category"]:::categoryUC
+        UC_EDIT_CATEGORY["Edit Category"]:::categoryUC
+        UC_DELETE_CATEGORY["Delete Category"]:::categoryUC
+        UC_CREATE_TAG["Create Tag"]:::categoryUC
+        UC_BROWSE_CATEGORY["Browse by Category"]:::categoryUC
+        UC_BROWSE_TAG["Browse by Tag"]:::categoryUC
+    end
+
+    subgraph MEDIA["Media Management"]
+        direction TB
+        UC_UPLOAD_MEDIA["Upload Media File"]:::mediaUC
+        UC_LIST_MEDIA["List My Media"]:::mediaUC
+        UC_DELETE_MEDIA["Delete Media"]:::mediaUC
+        UC_LINK_MEDIA["Link Media to Post"]:::mediaUC
+    end
+
+    subgraph NEWSLETTER["Newsletter"]
+        direction TB
+        UC_SUBSCRIBE["Subscribe to Newsletter"]:::newsletterUC
+        UC_CONFIRM_SUB["Confirm Subscription"]:::newsletterUC
+        UC_UNSUBSCRIBE["Unsubscribe"]:::newsletterUC
+        UC_SEND_CAMPAIGN["Send Campaign"]:::newsletterUC
+    end
+
+    subgraph NOTIFICATIONS["Notifications"]
+        direction TB
+        UC_VIEW_NOTIF["View Notifications"]:::notifUC
+        UC_MARK_READ["Mark as Read"]:::notifUC
+        UC_RECEIVE_NOTIF["Receive Notification"]:::notifUC
+    end
+
+    subgraph FEEDBACK_SEC["Feedback and Support"]
+        direction TB
+        UC_SUBMIT_FEEDBACK["Submit Feedback Report"]:::feedbackUC
+        UC_SEND_MESSAGE["Send Feedback Message"]:::feedbackUC
+        UC_VIEW_FEEDBACK["View My Feedback"]:::feedbackUC
+    end
+
+    subgraph ADMINISTRATION["Administration"]
+        direction TB
+        UC_APPROVE_AUTHOR["Approve or Reject Author"]:::adminUC
+        UC_MANAGE_USERS["Manage Users"]:::adminUC
+        UC_MODERATE_COMMENTS["Moderate Comments"]:::adminUC
+        UC_VIEW_AUDIT["View Audit Logs"]:::adminUC
+        UC_MANAGE_POSTS["Manage All Posts"]:::adminUC
+        UC_RESPOND_FEEDBACK["Respond to Feedback"]:::adminUC
+        UC_CHANGE_FEEDBACK_STATUS["Change Feedback Status"]:::adminUC
+        UC_ADMIN_BROADCAST["Send Admin Broadcast"]:::adminUC
+        UC_DASHBOARD["View Admin Dashboard"]:::adminUC
+    end
+
+    %% --- VISITOR ---
+    VISITOR --> UC_REGISTER
+    VISITOR --> UC_LOGIN
+    VISITOR --> UC_BROWSE_POSTS
+    VISITOR --> UC_READ_POST
+    VISITOR --> UC_BROWSE_CATEGORY
+    VISITOR --> UC_BROWSE_TAG
+    VISITOR --> UC_SUBSCRIBE
+    VISITOR --> UC_OAUTH_LOGIN
+    VISITOR --> UC_FORGOT_PWD
+
+    %% --- READER ---
+    READER --> UC_LOGOUT
+    READER --> UC_VERIFY_EMAIL
+    READER --> UC_RESET_PWD
+    READER --> UC_VIEW_PROFILE
+    READER --> UC_EDIT_PROFILE
+    READER --> UC_CHANGE_AVATAR
+    READER --> UC_REQ_AUTHOR
+    READER --> UC_LIKE_POST
+    READER --> UC_BOOKMARK_POST
+    READER --> UC_VIEW_HISTORY
+    READER --> UC_FOLLOW_AUTHOR
+    READER --> UC_ADD_COMMENT
+    READER --> UC_REPLY_COMMENT
+    READER --> UC_EDIT_COMMENT
+    READER --> UC_DELETE_COMMENT
+    READER --> UC_LIKE_COMMENT
+    READER --> UC_VIEW_NOTIF
+    READER --> UC_MARK_READ
+    READER --> UC_UNSUBSCRIBE
+    READER --> UC_VIEW_PLANS
+    READER --> UC_PURCHASE_PRO
+    READER --> UC_VIEW_SUB_STATUS
+    READER --> UC_VIEW_PREMIUM
+    READER --> UC_SUBMIT_FEEDBACK
+    READER --> UC_SEND_MESSAGE
+    READER --> UC_VIEW_FEEDBACK
+
+    %% --- AUTHOR ---
+    AUTHOR --> UC_CREATE_POST
+    AUTHOR --> UC_EDIT_POST
+    AUTHOR --> UC_DELETE_POST
+    AUTHOR --> UC_PUBLISH_POST
+    AUTHOR --> UC_SCHEDULE_POST
+    AUTHOR --> UC_UPLOAD_MEDIA
+    AUTHOR --> UC_LIST_MEDIA
+    AUTHOR --> UC_DELETE_MEDIA
+    AUTHOR --> UC_LINK_MEDIA
+    AUTHOR --> UC_CREATE_TAG
+
+    %% --- ADMIN ---
+    ADMIN --> UC_APPROVE_AUTHOR
+    ADMIN --> UC_MANAGE_USERS
+    ADMIN --> UC_MODERATE_COMMENTS
+    ADMIN --> UC_VIEW_AUDIT
+    ADMIN --> UC_MANAGE_POSTS
+    ADMIN --> UC_CREATE_CATEGORY
+    ADMIN --> UC_EDIT_CATEGORY
+    ADMIN --> UC_DELETE_CATEGORY
+    ADMIN --> UC_SEND_CAMPAIGN
+    ADMIN --> UC_RESPOND_FEEDBACK
+    ADMIN --> UC_CHANGE_FEEDBACK_STATUS
+    ADMIN --> UC_ADMIN_BROADCAST
+    ADMIN --> UC_DASHBOARD
+
+    %% --- SYSTEM ---
+    SYSTEM --> UC_VERIFY_PAYMENT
+    SYSTEM --> UC_RECEIVE_NOTIF
+    SYSTEM --> UC_CONFIRM_SUB
+    SYSTEM --> UC_VERIFY_EMAIL
+
+    %% --- INCLUDE and EXTEND ---
+    UC_PURCHASE_PRO -.->|includes| UC_VERIFY_PAYMENT
+    UC_REGISTER -.->|includes| UC_VERIFY_EMAIL
+    UC_FORGOT_PWD -.->|includes| UC_RESET_PWD
+    UC_SUBSCRIBE -.->|includes| UC_CONFIRM_SUB
+    UC_CREATE_POST -.->|extends| UC_UPLOAD_MEDIA
+    UC_CREATE_POST -.->|extends| UC_SCHEDULE_POST
+    UC_PUBLISH_POST -.->|extends| UC_RECEIVE_NOTIF
+    UC_ADD_COMMENT -.->|extends| UC_RECEIVE_NOTIF
+    UC_LIKE_POST -.->|extends| UC_RECEIVE_NOTIF
+    UC_FOLLOW_AUTHOR -.->|extends| UC_RECEIVE_NOTIF
+    UC_VIEW_PREMIUM -.->|requires| UC_PURCHASE_PRO
+
+    style AUTH fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,rx:16
+    style SUBSCRIPTION fill:#FFF7ED,stroke:#EA580C,stroke-width:2px,rx:16
+    style POSTS fill:#ECFEFF,stroke:#0891B2,stroke-width:2px,rx:16
+    style COMMENTS fill:#ECFDF5,stroke:#059669,stroke-width:2px,rx:16
+    style CATEGORIES fill:#FFFBEB,stroke:#D97706,stroke-width:2px,rx:16
+    style MEDIA fill:#F5F3FF,stroke:#7C3AED,stroke-width:2px,rx:16
+    style NEWSLETTER fill:#FDF2F8,stroke:#DB2777,stroke-width:2px,rx:16
+    style NOTIFICATIONS fill:#FEF2F2,stroke:#DC2626,stroke-width:2px,rx:16
+    style FEEDBACK_SEC fill:#F0FDFA,stroke:#0D9488,stroke-width:2px,rx:16
+    style ADMINISTRATION fill:#EEF2FF,stroke:#4338CA,stroke-width:2px,rx:16

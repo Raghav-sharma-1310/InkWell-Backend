@@ -1,0 +1,65 @@
+sequenceDiagram
+    participant FE as Frontend
+    participant GW as API Gateway
+    participant AC as AuthController
+    participant AS as AuthService
+    participant UR as UserRepository
+    participant JWT as JwtService
+    participant RT as RefreshTokenService
+    participant ES as EmailService
+    participant DB as MySQL (auth_db)
+    participant MAIL as Mailpit/SMTP
+
+    Note over FE,MAIL: Registration Flow
+    FE->>GW: POST /api/auth/register
+    GW->>AC: Forward (public path)
+    AC->>AS: register(request)
+    AS->>UR: existsByEmailIgnoreCase()
+    UR->>DB: SELECT
+    DB-->>UR: false
+    AS->>UR: existsByUsernameIgnoreCase()
+    UR->>DB: SELECT
+    DB-->>UR: false
+    AS->>UR: save(user)
+    UR->>DB: INSERT INTO users
+    DB-->>UR: saved
+    AS->>ES: sendWelcomeEmail()
+    ES->>MAIL: Send welcome email
+    AS->>JWT: generateAccessToken(user)
+    JWT-->>AS: accessToken
+    AS->>RT: createForUser(user)
+    RT->>DB: INSERT INTO refresh_tokens
+    AS-->>AC: AuthResponse
+    AC-->>GW: 200 + tokens + user
+    GW-->>FE: Response
+
+    Note over FE,MAIL: Login Flow
+    FE->>GW: POST /api/auth/login
+    GW->>AC: Forward (public path)
+    AC->>AS: login(request)
+    AS->>AS: loginRateLimiter.checkAndIncrement()
+    AS->>UR: findByEmailIgnoreCase()
+    UR->>DB: SELECT
+    DB-->>UR: User
+    AS->>AS: passwordEncoder.matches()
+    AS->>ES: sendLoginNotificationEmail()
+    AS->>JWT: generateAccessToken(user)
+    AS->>RT: createForUser(user)
+    AS-->>AC: AuthResponse
+    AC-->>GW: 200 + tokens
+    GW-->>FE: Response
+
+    Note over FE,MAIL: Admin Console - Remove Admin Role
+    FE->>GW: PUT /api/auth/admin/console/admins/{id}/remove-role
+    GW->>GW: JWT validation + ADMIN role check
+    GW->>AC: Forward with X-Headers
+    AC->>AS: AdminConsoleService.removeAdminRole()
+    AS->>AS: Assert caller is default admin
+    AS->>UR: findById(adminId)
+    UR->>DB: SELECT
+    AS->>AS: Assert target is not default admin
+    AS->>UR: save(user with role=READER)
+    UR->>DB: UPDATE users SET role='READER'
+    AS-->>AC: UserResponse
+    AC-->>GW: 200 + updated user
+    GW-->>FE: Response

@@ -1,0 +1,32 @@
+server:
+  port: ${SERVER_PORT:8761}
+
+spring:
+  application:
+    name: discovery-service
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://localhost:9090}
+        instance:
+          service-base-url: ${SERVICE_BASE_URL:http://localhost:${SERVER_PORT:8761}}
+          management-base-url: ${MANAGEMENT_BASE_URL:http://localhost:${SERVER_PORT:8761}}
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 10000
+  instance:
+    hostname: ${EUREKA_HOST:localhost}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

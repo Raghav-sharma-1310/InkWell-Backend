@@ -1,0 +1,85 @@
+classDiagram
+    class NotificationController {
+        -NotificationService service
+        +mine()
+        +unreadCount()
+        +markRead()
+        +markAllRead()
+        +deleteRead()
+    }
+
+    class AdminNotificationController {
+        -NotificationService service
+        +broadcast()
+        +audits()
+        +deleteNotification()
+        +deleteBroadcast()
+    }
+
+    class NotificationService {
+        -NotificationRepository notificationRepository
+        -AuditLogRepository auditLogRepository
+        -AuthClient authClient
+        -MailService mailService
+        -RabbitTemplate rabbitTemplate
+        +mine()
+        +unreadCount()
+        +markRead()
+        +markAllRead()
+        +deleteRead()
+        +broadcast()
+        +audits()
+        +onComment()
+        +onReply()
+        +onPostPublished()
+        -createNotification()
+    }
+
+    class MailService {
+        +send(to, subject, htmlBody)
+    }
+
+    class AuthClient {
+        +getUser(userId) ApiResponse~UserResponse~
+        +searchUsers(query) ApiResponse~List~UserResponse~~
+    }
+
+    class NotificationRepository {
+        +findByRecipientIdOrderByCreatedAtDesc()
+        +countByRecipientIdAndReadFalse()
+        +deleteByRecipientIdAndReadTrue()
+        +deleteByRelatedIdAndRelatedType()
+    }
+
+    class AuditLogRepository {
+        +findAllByOrderByCreatedAtDesc()
+    }
+
+    class Notification {
+        +UUID notificationId
+        +UUID recipientId
+        +UUID actorId
+        +NotificationType type
+        +String title
+        +String message
+        +boolean read
+    }
+
+    class AuditLog {
+        +UUID auditId
+        +UUID actorId
+        +String action
+        +String source
+        +String details
+    }
+
+    NotificationController --> NotificationService
+    AdminNotificationController --> NotificationService
+    NotificationService --> NotificationRepository
+    NotificationService --> AuditLogRepository
+    NotificationService --> AuthClient : "Feign"
+    NotificationService --> MailService
+    NotificationService ..> RabbitMQ : "listens + publishes"
+    MailService ..> Mailpit : "SMTP"
+    NotificationRepository --> Notification
+    AuditLogRepository --> AuditLog

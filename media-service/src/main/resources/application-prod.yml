@@ -1,0 +1,33 @@
+# Production profile. Values are supplied by docker-compose.prod.yml from .env.
+spring:
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://admin-server:9090}
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:media_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://discovery-service:8761/eureka}
+
+app:
+  storage:
+    # Use s3 for production object storage, or local with a persistent volume for small EC2 demos.
+    mode: ${STORAGE_MODE:s3}
+    local-dir: ${LOCAL_STORAGE_DIR:/app/uploads/media}
+    public-base-url: ${MEDIA_PUBLIC_BASE_URL}
+    s3:
+      bucket: ${AWS_S3_BUCKET:}
+      region: ${AWS_REGION:us-east-1}
+      access-key: ${AWS_ACCESS_KEY_ID:}
+      secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      public-base-url: ${AWS_S3_PUBLIC_BASE_URL:}
+
+management:
+  endpoint:
+    health:
+      show-details: never

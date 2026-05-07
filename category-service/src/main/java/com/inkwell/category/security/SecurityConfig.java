@@ -22,6 +22,7 @@ public class SecurityConfig {
     private final GatewayAuthenticationFilter gatewayAuthenticationFilter;
     @Bean
     // Provides security filter chain wiring so the framework can apply the expected runtime behavior.
+    @SuppressWarnings("java:S4502")
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())

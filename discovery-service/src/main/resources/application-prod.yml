@@ -1,0 +1,16 @@
+# Production profile. Values are supplied by docker-compose.prod.yml from .env.
+spring:
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://admin-server:9090}
+
+eureka:
+  instance:
+    # Register the Docker service name instead of localhost.
+    hostname: discovery-service
+
+management:
+  endpoint:
+    health:
+      show-details: never

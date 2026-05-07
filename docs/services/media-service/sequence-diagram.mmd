@@ -1,0 +1,36 @@
+sequenceDiagram
+    participant FE as Frontend
+    participant GW as API Gateway
+    participant MC as MediaController
+    participant MS as MediaService
+    participant SS as StorageService
+    participant MR as MediaRepository
+    participant DB as MySQL (media_db)
+    participant STOR as Local/S3 Storage
+
+    Note over FE,STOR: File Upload Flow
+    FE->>GW: POST /api/media/author/upload (multipart)
+    GW->>GW: Validate JWT + AUTHOR role
+    GW->>MC: Forward with X-Headers
+    MC->>MS: upload(file, principal)
+    MS->>SS: store(file)
+    SS->>STOR: Write file to disk/S3
+    STOR-->>SS: StoredFile (path, publicUrl)
+    SS-->>MS: StoredFile
+    MS->>MR: save(mediaFile)
+    MR->>DB: INSERT INTO media_files
+    MS-->>MC: MediaResponse
+    MC-->>GW: 201 Created
+    GW-->>FE: Media URL
+
+    Note over FE,STOR: Serve Public File
+    FE->>GW: GET /api/media/public/files/{filename}
+    GW->>MC: Forward (public path)
+    MC->>MS: getFile(filename)
+    MS->>SS: load(filename)
+    SS->>STOR: Read file
+    STOR-->>SS: File bytes
+    SS-->>MS: Resource
+    MS-->>MC: File content
+    MC-->>GW: 200 + binary file
+    GW-->>FE: Image/file data

@@ -1,0 +1,47 @@
+sequenceDiagram
+    participant FE as Frontend
+    participant GW as API Gateway
+    participant CC as CommentController
+    participant CS as CommentService
+    participant PC as PostClient
+    participant CR as CommentRepository
+    participant DB as MySQL (comment_db)
+    participant RMQ as RabbitMQ
+
+    Note over FE,RMQ: Create Comment Flow
+    FE->>GW: POST /api/comments/ + Bearer Token
+    GW->>GW: Validate JWT
+    GW->>CC: Forward with X-Headers
+    CC->>CS: create(request, principal)
+    CS->>PC: getMeta(postId)
+    PC-->>CS: PostMetaResponse (authorId, title)
+    CS->>CS: HtmlSanitizer.sanitize(content)
+    CS->>CR: save(comment)
+    CR->>DB: INSERT INTO comments
+    DB-->>CR: saved
+
+    alt Is reply (parentCommentId != null)
+        CS->>RMQ: send("comment.reply", payload)
+    else Is top-level comment
+        CS->>RMQ: send("comment.new", payload)
+    end
+
+    CS-->>CC: CommentResponse
+    CC-->>GW: 201 Created
+    GW-->>FE: Response
+
+    Note over FE,RMQ: Like Comment Flow
+    FE->>GW: POST /api/comments/{id}/like
+    GW->>CC: Forward
+    CC->>CS: like(commentId, principal)
+    CS->>CR: findById(commentId)
+    alt Already liked
+        CS->>DB: DELETE FROM comment_likes
+        CS->>CR: decrement likesCount
+    else Not yet liked
+        CS->>DB: INSERT INTO comment_likes
+        CS->>CR: increment likesCount
+    end
+    CS-->>CC: LikeResponse
+    CC-->>GW: 200 OK
+    GW-->>FE: Response

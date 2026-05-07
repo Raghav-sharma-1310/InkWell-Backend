@@ -1,0 +1,26 @@
+graph TB
+    Guest["Guest"]
+    User["User"]
+    Admin["Admin"]
+    DefaultAdmin["Default Admin"]
+    System["System (Internal)"]
+
+    Guest -->|"Register"| UC1["Create Account"]
+    Guest -->|"Search"| UC2["Search Users"]
+    Guest -->|"View"| UC3["View Author Profiles"]
+
+    User -->|"View"| UC4["Get Own Profile"]
+    User -->|"Edit"| UC5["Update Profile"]
+    User -->|"Security"| UC6["Change Password"]
+    User -->|"Leave"| UC7["Deactivate Account"]
+
+    Admin -->|"List"| UC8["List All Users"]
+    Admin -->|"Role"| UC9["Update User Role"]
+    Admin -->|"Suspend"| UC10["Suspend User"]
+    Admin -->|"Reactivate"| UC11["Reactivate User"]
+    Admin -->|"Delete"| UC12["Delete User"]
+
+    DefaultAdmin -->|"Demote"| UC13["Remove Admin Role"]
+    DefaultAdmin -->|"Delete"| UC14["Delete Admin Account"]
+
+    System -->|"Fetch"| UC15["Get User by ID (Feign)"]

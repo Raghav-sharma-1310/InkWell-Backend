@@ -1,0 +1,321 @@
+%%{init: {"er": {"layoutDirection": "TB"}, "defaultRenderer": "elk"}}%%
+erDiagram
+    %% ============================================================
+    %%  InkWell Platform - Complete Entity-Relationship Diagram
+    %%  Covers all 8 microservices and their persistent entities
+    %% ============================================================
+
+    %% --- AUTH SERVICE ---
+
+    USER {
+        UUID user_id PK
+        string username UK
+        string email UK
+        string password_hash
+        string full_name
+        string role
+        string bio
+        string avatar_url
+        string phone_number
+        string provider
+        boolean is_active
+        string subscription_tier
+        string subscription_status
+        datetime subscription_end_date
+        datetime created_at
+        datetime updated_at
+    }
+
+    REFRESH_TOKEN {
+        long id PK
+        string token UK
+        UUID user_id FK
+        datetime expires_at
+        datetime created_at
+    }
+
+    EMAIL_VERIFICATION_TOKEN {
+        UUID token_id PK
+        UUID user_id FK
+        string token UK
+        datetime expires_at
+        boolean used
+    }
+
+    PASSWORD_OTP {
+        long id PK
+        string email
+        string otp
+        datetime expires_at
+        boolean verified
+        datetime created_at
+    }
+
+    AUTHOR_REQUEST {
+        UUID request_id PK
+        UUID user_id FK
+        string status
+        string admin_remarks
+        datetime requested_at
+        datetime updated_at
+    }
+
+    PAYMENT_ORDER {
+        UUID payment_order_id PK
+        UUID user_id FK
+        string provider
+        string status
+        decimal amount
+        string currency
+        string purpose
+        string description
+        string gateway_order_id
+        string gateway_payment_id
+        string gateway_signature
+        string gateway_receipt
+        string failure_reason
+        datetime completed_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    FEEDBACK_REPORT {
+        UUID report_id PK
+        UUID user_id FK
+        string status
+        string page_url
+        datetime created_at
+        datetime updated_at
+    }
+
+    FEEDBACK_MESSAGE {
+        UUID message_id PK
+        UUID report_id FK
+        UUID sender_id
+        string sender_name
+        string sender_role
+        string content
+        datetime sent_at
+    }
+
+    AUTH_AUDIT_LOG {
+        UUID log_id PK
+        UUID actor_id
+        string actor_email
+        string action
+        string entity_type
+        string entity_id
+        text details
+        datetime created_at
+    }
+
+    %% --- POST SERVICE ---
+
+    POST {
+        UUID post_id PK
+        UUID author_id FK
+        string title
+        string slug UK
+        longtext content
+        string excerpt
+        string featured_image_url
+        string status
+        string visibility
+        int read_time_min
+        long view_count
+        long likes_count
+        string category_slug
+        boolean is_featured
+        boolean pinned
+        datetime created_at
+        datetime updated_at
+        datetime published_at
+        datetime scheduled_at
+    }
+
+    POST_TAG {
+        UUID post_id FK
+        string tag_slug FK
+    }
+
+    POST_HISTORY {
+        UUID history_id PK
+        UUID user_id FK
+        UUID post_id FK
+        datetime viewed_at
+    }
+
+    FOLLOW {
+        UUID follow_id PK
+        UUID follower_id FK
+        UUID followed_id FK
+        datetime created_at
+    }
+
+    BOOKMARK {
+        UUID bookmark_id PK
+        UUID user_id FK
+        UUID post_id FK
+        datetime created_at
+    }
+
+    POST_LIKE {
+        UUID post_id PK
+        UUID user_id PK
+        datetime created_at
+    }
+
+    %% --- COMMENT SERVICE ---
+
+    COMMENT {
+        UUID comment_id PK
+        UUID post_id FK
+        UUID author_id FK
+        string author_name
+        UUID parent_comment_id FK
+        text content
+        long likes_count
+        string status
+        datetime created_at
+        datetime updated_at
+    }
+
+    COMMENT_LIKE {
+        UUID comment_id PK
+        UUID user_id PK
+        datetime created_at
+    }
+
+    %% --- CATEGORY SERVICE ---
+
+    CATEGORY {
+        UUID category_id PK
+        string name UK
+        string slug UK
+        string description
+        UUID parent_category_id FK
+        long post_count
+        datetime created_at
+    }
+
+    TAG {
+        UUID tag_id PK
+        string name UK
+        string slug UK
+        long post_count
+        datetime created_at
+    }
+
+    POST_CATEGORY_MAPPING {
+        UUID post_id PK
+        string category_slug FK
+        boolean published
+    }
+
+    POST_TAG_MAPPING {
+        UUID post_id PK
+        string tag_slug PK
+        boolean published
+    }
+
+    %% --- MEDIA SERVICE ---
+
+    MEDIA_FILE {
+        UUID media_id PK
+        UUID uploader_id FK
+        string filename
+        string original_name
+        string url
+        string mime_type
+        long size_kb
+        string alt_text
+        UUID linked_post_id FK
+        datetime uploaded_at
+        boolean is_deleted
+    }
+
+    %% --- NEWSLETTER SERVICE ---
+
+    SUBSCRIBER {
+        UUID subscriber_id PK
+        string email UK
+        UUID user_id FK
+        string full_name
+        string status
+        datetime subscribed_at
+        datetime unsubscribed_at
+        string token UK
+        string preferences
+    }
+
+    CAMPAIGN {
+        UUID campaign_id PK
+        string subject
+        text content
+        datetime created_at
+    }
+
+    %% --- NOTIFICATION SERVICE ---
+
+    NOTIFICATION {
+        UUID notification_id PK
+        UUID recipient_id FK
+        UUID actor_id FK
+        string type
+        string title
+        string message
+        string related_id
+        string related_type
+        boolean is_read
+        datetime created_at
+    }
+
+    NOTIFICATION_AUDIT_LOG {
+        UUID audit_id PK
+        UUID actor_id
+        string action
+        string source
+        string details
+        datetime created_at
+    }
+
+    %% ============================================================
+    %%  RELATIONSHIPS
+    %% ============================================================
+
+    USER ||--o{ REFRESH_TOKEN : "has"
+    USER ||--o{ EMAIL_VERIFICATION_TOKEN : "verifies"
+    USER ||--o{ AUTHOR_REQUEST : "submits"
+    USER ||--o{ PAYMENT_ORDER : "places"
+    USER ||--o{ FEEDBACK_REPORT : "creates"
+    FEEDBACK_REPORT ||--o{ FEEDBACK_MESSAGE : "contains"
+
+    USER ||--o{ POST : "writes"
+    USER ||--o{ POST_LIKE : "likes"
+    USER ||--o{ BOOKMARK : "bookmarks"
+    USER ||--o{ FOLLOW : "follows"
+    USER ||--o{ POST_HISTORY : "views"
+
+    POST ||--o{ POST_TAG : "tagged with"
+    POST ||--o{ POST_LIKE : "receives"
+    POST ||--o{ BOOKMARK : "saved in"
+    POST ||--o{ POST_HISTORY : "tracked in"
+
+    POST ||--o{ COMMENT : "has"
+    USER ||--o{ COMMENT : "writes"
+    COMMENT ||--o{ COMMENT : "replies to"
+    COMMENT ||--o{ COMMENT_LIKE : "receives"
+    USER ||--o{ COMMENT_LIKE : "likes"
+
+    CATEGORY ||--o{ CATEGORY : "parent of"
+    CATEGORY ||--o{ POST_CATEGORY_MAPPING : "maps"
+    POST ||--o| POST_CATEGORY_MAPPING : "categorized via"
+    TAG ||--o{ POST_TAG_MAPPING : "maps"
+    POST ||--o{ POST_TAG_MAPPING : "tagged via"
+
+    USER ||--o{ MEDIA_FILE : "uploads"
+    POST ||--o{ MEDIA_FILE : "attached to"
+
+    USER |o--o| SUBSCRIBER : "subscribes as"
+
+    USER ||--o{ NOTIFICATION : "receives"

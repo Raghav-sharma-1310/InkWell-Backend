@@ -1,0 +1,20 @@
+graph TB
+    Guest["Guest (Unauthenticated)"]
+    User["Authenticated User"]
+    Admin["Admin"]
+    System["System / Eureka"]
+
+    Guest -->|"Access public endpoints"| UC1["View Public Posts"]
+    Guest -->|"Register / Login"| UC2["Authentication"]
+    Guest -->|"Subscribe newsletter"| UC3["Newsletter Subscribe"]
+
+    User -->|"Access protected endpoints"| UC4["Authenticated API Access"]
+    User -->|"JWT validated"| UC5["Token Validation"]
+
+    Admin -->|"Access admin endpoints"| UC6["Admin API Access"]
+    Admin -->|"Role checked at gateway"| UC7["Role Enforcement"]
+
+    System -->|"Service discovery"| UC8["Eureka Resolution"]
+    System -->|"Health check"| UC9["Actuator Health"]
+    System -->|"Circuit breaking"| UC10["Resilience4j Fallback"]
+    System -->|"Rate limiting"| UC11["Redis Rate Limit"]

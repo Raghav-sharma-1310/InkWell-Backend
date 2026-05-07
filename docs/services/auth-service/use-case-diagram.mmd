@@ -1,0 +1,34 @@
+graph TB
+    Guest["Guest"]
+    User["Authenticated User"]
+    Admin["Admin"]
+    DefaultAdmin["Default Admin"]
+    System["System"]
+
+    Guest -->|"Register"| UC1["Create Account"]
+    Guest -->|"Login"| UC2["Email/Password Login"]
+    Guest -->|"Social Login"| UC3["Google/GitHub OAuth2"]
+    Guest -->|"Forgot Password"| UC4["OTP Password Reset"]
+
+    User -->|"View Profile"| UC5["Get Current User"]
+    User -->|"Edit Profile"| UC6["Update Profile"]
+    User -->|"Change Password"| UC7["Change Password"]
+    User -->|"Deactivate"| UC8["Deactivate Account"]
+    User -->|"Logout"| UC9["Logout / Revoke Token"]
+    User -->|"Request Author Role"| UC10["Submit Author Request"]
+    User -->|"Report Bug"| UC11["Submit Feedback"]
+    User -->|"Subscribe PRO"| UC12["Create Payment Order"]
+
+    Admin -->|"List Users"| UC13["Get All Users"]
+    Admin -->|"Change Role"| UC14["Update User Role"]
+    Admin -->|"Suspend User"| UC15["Toggle Active Status"]
+    Admin -->|"Delete User"| UC16["Delete Non-Admin User"]
+    Admin -->|"Approve Author"| UC17["Review Author Request"]
+    Admin -->|"Manage Feedback"| UC18["Manage Bug Reports"]
+
+    DefaultAdmin -->|"Demote Admin"| UC19["Remove Admin Role"]
+    DefaultAdmin -->|"Delete Admin"| UC20["Delete Admin Account"]
+
+    System -->|"Seed Admin"| UC21["AdminSeeder on Startup"]
+    System -->|"Send Emails"| UC22["Transactional Emails"]
+    System -->|"Rate Limit Login"| UC23["Login Rate Limiting"]

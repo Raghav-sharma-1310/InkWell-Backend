@@ -1,0 +1,16 @@
+graph TB
+    Guest["Guest"]
+    User["Subscriber"]
+    Admin["Admin"]
+    System["System"]
+
+    Guest -->|"Subscribe"| UC1["Submit Email"]
+    Guest -->|"Verify"| UC2["Confirm Subscription"]
+    User -->|"Unsubscribe"| UC3["Cancel Subscription"]
+
+    Admin -->|"View"| UC4["List Subscribers"]
+    Admin -->|"Campaign"| UC5["Create & Send Campaign"]
+    Admin -->|"History"| UC6["View Past Campaigns"]
+
+    System -->|"Email"| UC7["Send Confirmation Email"]
+    System -->|"Email"| UC8["Send Campaign Emails"]

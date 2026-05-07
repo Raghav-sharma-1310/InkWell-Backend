@@ -1,0 +1,93 @@
+graph TB
+    subgraph Client["Client Layer"]
+        FE["React SPA<br/>Vite + TailwindCSS<br/>Port 5173"]
+    end
+
+    subgraph Edge["Edge Layer"]
+        GW["API Gateway<br/>Spring Cloud Gateway<br/>Port 8080"]
+    end
+
+    subgraph Discovery["Discovery Layer"]
+        EUR["Eureka Server<br/>Port 8761"]
+        ADM["Admin Server<br/>Port 9090"]
+    end
+
+    subgraph Services["Business Services"]
+        AUTH["Auth Service<br/>Port 8081"]
+        POST["Post Service<br/>Port 8082"]
+        CAT["Category Service<br/>Port 8083"]
+        COM["Comment Service<br/>Port 8084"]
+        MED["Media Service<br/>Port 8085"]
+        NL["Newsletter Service<br/>Port 8086"]
+        NOT["Notification Service<br/>Port 8087"]
+        PAY["Payment Service<br/>Port 8088"]
+    end
+
+    subgraph Data["Data Layer"]
+        MYSQL["MySQL 8.4"]
+        REDIS["Redis 7.4"]
+        RMQ["RabbitMQ 3.13"]
+        MAIL["Mailpit<br/>SMTP :1025 / UI :8025"]
+    end
+
+    subgraph External["External"]
+        GOOGLE["Google OAuth2"]
+        GITHUB["GitHub OAuth2"]
+        RAZOR["Razorpay API"]
+    end
+
+    FE -->|"HTTP/REST"| GW
+    GW -->|"lb://"| AUTH
+    GW -->|"lb://"| POST
+    GW -->|"lb://"| CAT
+    GW -->|"lb://"| COM
+    GW -->|"lb://"| MED
+    GW -->|"lb://"| NL
+    GW -->|"lb://"| NOT
+    GW -->|"lb://"| PAY
+
+    AUTH --> MYSQL
+    POST --> MYSQL
+    CAT --> MYSQL
+    COM --> MYSQL
+    MED --> MYSQL
+    NL --> MYSQL
+    NOT --> MYSQL
+
+    GW --> REDIS
+    POST --> REDIS
+
+    POST --> RMQ
+    COM --> RMQ
+    CAT --> RMQ
+    NL --> RMQ
+    NOT --> RMQ
+
+    AUTH --> MAIL
+    NL --> MAIL
+    NOT --> MAIL
+
+    AUTH --> GOOGLE
+    AUTH --> GITHUB
+    AUTH --> RAZOR
+    PAY --> RAZOR
+
+    AUTH -.->|"register"| EUR
+    POST -.->|"register"| EUR
+    CAT -.->|"register"| EUR
+    COM -.->|"register"| EUR
+    MED -.->|"register"| EUR
+    NL -.->|"register"| EUR
+    NOT -.->|"register"| EUR
+    PAY -.->|"register"| EUR
+    GW -.->|"register"| EUR
+    ADM -.->|"register"| EUR
+
+    AUTH -.->|"health"| ADM
+    POST -.->|"health"| ADM
+    CAT -.->|"health"| ADM
+    COM -.->|"health"| ADM
+    MED -.->|"health"| ADM
+    NL -.->|"health"| ADM
+    NOT -.->|"health"| ADM
+    GW -.->|"health"| ADM

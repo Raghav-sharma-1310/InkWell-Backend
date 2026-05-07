@@ -1,0 +1,73 @@
+graph TB
+    subgraph Docker["Docker Compose Orchestration"]
+        subgraph Infra["Infrastructure"]
+            MYSQL["MySQL 8.4<br/>:3306"]
+            REDIS["Redis 7.4<br/>:6379"]
+            RMQ["RabbitMQ 3.13<br/>:5672 / :15672"]
+            MAILPIT["Mailpit<br/>:1025 / :8025"]
+        end
+
+        subgraph Platform["Platform Services"]
+            EUR["Discovery Service<br/>(Eureka) :8761"]
+            ADMIN["Admin Server<br/>:9090"]
+            GW["API Gateway<br/>:8080"]
+        end
+
+        subgraph Business["Business Services"]
+            AUTH["Auth Service :8081"]
+            POST["Post Service :8082"]
+            CAT["Category Service :8083"]
+            COM["Comment Service :8084"]
+            MED["Media Service :8085"]
+            NL["Newsletter Service :8086"]
+            NOT["Notification Service :8087"]
+            PAY["Payment Service :8088"]
+        end
+
+        FE["Frontend Web :5173"]
+    end
+
+    subgraph External["External Services"]
+        GOOGLE["Google OAuth2"]
+        GITHUB["GitHub OAuth2"]
+        RAZOR["Razorpay"]
+        S3["AWS S3<br/>(optional)"]
+    end
+
+    subgraph DevOps["Quality & DevOps"]
+        SONAR["SonarQube"]
+        JACOCO["JaCoCo"]
+        MVN["Maven 3 + Java 21"]
+    end
+
+    FE --> GW
+    GW --> EUR
+    AUTH --> MYSQL
+    POST --> MYSQL
+    CAT --> MYSQL
+    COM --> MYSQL
+    MED --> MYSQL
+    NL --> MYSQL
+    NOT --> MYSQL
+
+    GW --> REDIS
+    POST --> REDIS
+
+    POST --> RMQ
+    COM --> RMQ
+    NL --> RMQ
+    NOT --> RMQ
+    CAT --> RMQ
+
+    AUTH --> MAILPIT
+    NL --> MAILPIT
+    NOT --> MAILPIT
+
+    AUTH --> GOOGLE
+    AUTH --> GITHUB
+    AUTH --> RAZOR
+    PAY --> RAZOR
+    MED --> S3
+
+    MVN --> JACOCO
+    MVN --> SONAR

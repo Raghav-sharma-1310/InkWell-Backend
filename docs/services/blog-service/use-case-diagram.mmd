@@ -1,0 +1,29 @@
+graph TB
+    Guest["Guest"]
+    User["Reader"]
+    Author["Author"]
+    Admin["Admin"]
+    System["System"]
+
+    Guest -->|"Browse"| UC1["View Published Posts"]
+    Guest -->|"Explore"| UC2["Trending / Featured / Latest"]
+    Guest -->|"Read"| UC3["View Post by Slug"]
+
+    User -->|"Like"| UC4["Like / Unlike Post"]
+    User -->|"Bookmark"| UC5["Bookmark Post (Premium)"]
+    User -->|"History"| UC6["Reading History (Premium)"]
+    User -->|"Follow"| UC7["Follow / Unfollow Author"]
+
+    Author -->|"Create"| UC8["Create New Post"]
+    Author -->|"Edit"| UC9["Update Own Post"]
+    Author -->|"Delete"| UC10["Delete Own Post"]
+    Author -->|"Publish"| UC11["Publish / Schedule Post"]
+    Author -->|"View"| UC12["List Own Posts"]
+
+    Admin -->|"Feature"| UC13["Toggle Featured Flag"]
+    Admin -->|"Pin"| UC14["Toggle Pinned Flag"]
+
+    System -->|"Scheduler"| UC15["Auto-Publish Scheduled Posts"]
+    System -->|"Cache"| UC16["Redis Post Caching"]
+    System -->|"Events"| UC17["Publish RabbitMQ Events"]
+    System -->|"Taxonomy"| UC18["Sync Categories via Feign"]

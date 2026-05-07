@@ -20,7 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 /* This class groups security config behavior so the module keeps a clear responsibility. */
 public class SecurityConfig {
     private final GatewayAuthenticationFilter gatewayAuthenticationFilter;
-    @Bean public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean @SuppressWarnings("java:S4502")
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable).cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth.requestMatchers("/", "/api/newsletter/public/**", "/api/newsletter/verify", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/**").permitAll().anyRequest().authenticated())
             .addFilterBefore(gatewayAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

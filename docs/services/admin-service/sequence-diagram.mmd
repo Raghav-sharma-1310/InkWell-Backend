@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant DEV as Developer
+    participant ADM as Admin Server UI
+    participant EUR as Eureka
+    participant SVC as Any Microservice
+
+    DEV->>ADM: Open http://localhost:9090
+    ADM->>EUR: Fetch registered instances
+    EUR-->>ADM: List of services
+    loop For each service
+        ADM->>SVC: GET /actuator/health
+        SVC-->>ADM: Health status
+        ADM->>SVC: GET /actuator/metrics
+        SVC-->>ADM: JVM metrics
+    end
+    ADM-->>DEV: Dashboard with all service statuses

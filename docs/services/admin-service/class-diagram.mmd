@@ -1,0 +1,11 @@
+classDiagram
+    class AdminServerApplication {
+        +main()
+    }
+
+    class SecurityConfig {
+        +securityFilterChain()
+    }
+
+    AdminServerApplication ..> Eureka : "discovers services"
+    AdminServerApplication ..> Actuator : "polls /actuator endpoints"

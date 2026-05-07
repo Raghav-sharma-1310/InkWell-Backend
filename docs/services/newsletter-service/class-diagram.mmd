@@ -1,0 +1,63 @@
+classDiagram
+    class NewsletterController {
+        -NewsletterService service
+        +subscribe()
+        +verify()
+        +unsubscribe()
+        +listSubscribers()
+        +createCampaign()
+        +listCampaigns()
+    }
+
+    class NewsletterService {
+        -SubscriberRepository subscriberRepository
+        -CampaignRepository campaignRepository
+        -MailService mailService
+        -TemplateService templateService
+        +subscribe()
+        +verify()
+        +unsubscribe()
+        +listSubscribers()
+        +createCampaign()
+    }
+
+    class MailService {
+        +send(to, subject, htmlBody)
+    }
+
+    class TemplateService {
+        +renderConfirmation()
+        +renderCampaign()
+    }
+
+    class SubscriberRepository {
+        +findByEmail()
+        +findByToken()
+        +findByStatus()
+    }
+
+    class CampaignRepository {
+        +findAll()
+    }
+
+    class Subscriber {
+        +UUID subscriberId
+        +String email
+        +SubscriberStatus status
+        +String token
+    }
+
+    class Campaign {
+        +UUID campaignId
+        +String subject
+        +String content
+    }
+
+    NewsletterController --> NewsletterService
+    NewsletterService --> SubscriberRepository
+    NewsletterService --> CampaignRepository
+    NewsletterService --> MailService
+    NewsletterService --> TemplateService
+    MailService ..> Mailpit : "SMTP"
+    SubscriberRepository --> Subscriber
+    CampaignRepository --> Campaign

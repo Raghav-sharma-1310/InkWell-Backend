@@ -1,0 +1,106 @@
+classDiagram
+    class AuthorPostController {
+        -PostService postService
+        +create()
+        +update()
+        +delete()
+        +publish()
+        +myPosts()
+    }
+
+    class PublicPostController {
+        -PostService postService
+        +list()
+        +getBySlug()
+    }
+
+    class ExplorePostController {
+        -PostService postService
+        +trending()
+        +featured()
+        +latest()
+    }
+
+    class ReaderPostController {
+        -PostService postService
+        -FollowBookmarkService followBookmarkService
+        +like()
+        +bookmark()
+        +listBookmarks()
+    }
+
+    class AdminPostController {
+        -PostService postService
+        +toggleFeatured()
+        +togglePinned()
+    }
+
+    class InternalPostController {
+        -PostService postService
+        +getMeta()
+    }
+
+    class PostService {
+        -PostRepository postRepository
+        -PostLikeRepository postLikeRepository
+        -CategoryClient categoryClient
+        -RabbitTemplate rabbitTemplate
+        +createPost()
+        +updatePost()
+        +deletePost()
+        +publishPost()
+        +getBySlug()
+        +listPublished()
+        +likePost()
+        +incrementViewCount()
+    }
+
+    class FollowBookmarkService {
+        -FollowRepository followRepository
+        -BookmarkRepository bookmarkRepository
+        +follow()
+        +unfollow()
+        +bookmark()
+        +unbookmark()
+        +getBookmarks()
+    }
+
+    class PostScheduler {
+        -PostService postService
+        +publishScheduledPosts()
+    }
+
+    class CategoryClient {
+        +syncTaxonomy()
+    }
+
+    class PostRepository {
+        +findBySlug()
+        +findByAuthorId()
+        +findByStatus()
+    }
+
+    class Post {
+        +UUID postId
+        +UUID authorId
+        +String title
+        +String slug
+        +PostStatus status
+        +PostVisibility visibility
+        +Long viewCount
+        +Long likesCount
+    }
+
+    AuthorPostController --> PostService
+    PublicPostController --> PostService
+    ExplorePostController --> PostService
+    ReaderPostController --> PostService
+    ReaderPostController --> FollowBookmarkService
+    AdminPostController --> PostService
+    InternalPostController --> PostService
+    PostService --> PostRepository
+    PostService --> CategoryClient : "Feign"
+    PostService ..> RabbitMQ : "post.published / post.deleted"
+    PostService ..> Redis : "caching"
+    PostRepository --> Post
+    PostScheduler --> PostService

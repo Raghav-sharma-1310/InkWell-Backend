@@ -1,0 +1,20 @@
+graph TB
+    Guest["Guest"]
+    User["Authenticated User"]
+    Admin["Admin"]
+    System["System"]
+
+    Guest -->|"Browse"| UC1["View Post Comments"]
+
+    User -->|"Comment"| UC2["Create Comment"]
+    User -->|"Reply"| UC3["Reply to Comment (threaded)"]
+    User -->|"Edit"| UC4["Update Own Comment"]
+    User -->|"Remove"| UC5["Delete Own Comment"]
+    User -->|"Like"| UC6["Like / Unlike Comment"]
+
+    Admin -->|"Moderate"| UC7["Hide Comment"]
+    Admin -->|"Remove"| UC8["Delete Any Comment"]
+
+    System -->|"Validate"| UC9["Verify Post Exists (Feign)"]
+    System -->|"Notify"| UC10["Publish comment.new Event"]
+    System -->|"Notify Reply"| UC11["Publish comment.reply Event"]
