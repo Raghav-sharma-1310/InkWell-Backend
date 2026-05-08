@@ -139,7 +139,7 @@ Do not publicly open:
 SSH into EC2:
 
 ```bash
-ssh -i your-key.pem ubuntu@YOUR_EC2_PUBLIC_DNS
+ssh -i your-key.pem ubuntu@13.48.192.178
 ```
 
 Install Docker:
@@ -202,10 +202,10 @@ Example for Docker Hub:
 
 ```env
 DOCKER_IMAGE_PREFIX=yourdockerhubuser/inkwell
-FRONTEND_URL=http://ec2-xx-xx-xx-xx.ap-south-1.compute.amazonaws.com
-PUBLIC_GATEWAY_URL=http://ec2-xx-xx-xx-xx.ap-south-1.compute.amazonaws.com
-OAUTH2_REDIRECT_URI=http://ec2-xx-xx-xx-xx.ap-south-1.compute.amazonaws.com/oauth/success
-MEDIA_PUBLIC_BASE_URL=http://ec2-xx-xx-xx-xx.ap-south-1.compute.amazonaws.com/api/media/public/files
+FRONTEND_URL=http://13.48.192.178
+PUBLIC_GATEWAY_URL=http://13.48.192.178
+OAUTH2_REDIRECT_URI=http://13.48.192.178/oauth/success
+MEDIA_PUBLIC_BASE_URL=http://13.48.192.178/api/media/public/files
 ```
 
 For first smoke test, you can keep:
@@ -314,7 +314,7 @@ Create `s3-cors.json`:
     "AllowedHeaders": ["*"],
     "AllowedMethods": ["GET", "HEAD"],
     "AllowedOrigins": [
-      "http://YOUR_EC2_PUBLIC_DNS",
+      "http://13.48.192.178",
       "https://YOUR_DOMAIN"
     ],
     "ExposeHeaders": ["ETag"],
@@ -508,7 +508,7 @@ docker compose -f docker-compose.prod.yml --env-file .env logs -f media-service
 
 Test through the app:
 
-1. Open frontend: `http://YOUR_EC2_PUBLIC_DNS`.
+1. Open frontend: `http://13.48.192.178`.
 2. Login as an author.
 3. Upload an image.
 4. Confirm it appears in S3:
@@ -591,8 +591,8 @@ docker push YOUR_PREFIX/frontend-web:latest
 Copy these files to EC2:
 
 ```bash
-scp docker-compose.prod.yml ubuntu@YOUR_EC2_PUBLIC_DNS:/opt/inkwell/
-scp docker/mysql-init/* ubuntu@YOUR_EC2_PUBLIC_DNS:/opt/inkwell/docker/mysql-init/
+scp docker-compose.prod.yml ubuntu@13.48.192.178:/opt/inkwell/
+scp docker/mysql-init/* ubuntu@13.48.192.178:/opt/inkwell/docker/mysql-init/
 ```
 
 On EC2:
@@ -656,10 +656,9 @@ Create a Jenkins Pipeline job:
 
 Set Jenkins build parameters:
 
-- `DOCKER_IMAGE_PREFIX`: `yourdockerhubuser/inkwell`
-- `EC2_HOST`: `ubuntu@YOUR_EC2_PUBLIC_DNS`
+- `EC2_HOST`: `ubuntu@13.48.192.178`
 - `EC2_APP_DIR`: `/opt/inkwell`
-- `VITE_API_BASE_URL`: `/`
+- `VITE_API_BASE_URL`: `http://13.48.192.178:8080`
 
 Before first Jenkins deploy, ensure EC2 already has:
 
@@ -693,21 +692,21 @@ The frontend is deployed as a Docker image:
 That means the browser opens:
 
 ```text
-http://YOUR_EC2_PUBLIC_DNS
+http://13.48.192.178
 ```
 
 And frontend API calls go through same-origin Nginx:
 
 ```text
-http://YOUR_EC2_PUBLIC_DNS/api/...
+http://13.48.192.178/api/...
 ```
 
 Use this in `.env`:
 
 ```env
 VITE_API_BASE_URL=/
-FRONTEND_URL=http://YOUR_EC2_PUBLIC_DNS
-PUBLIC_GATEWAY_URL=http://YOUR_EC2_PUBLIC_DNS
+FRONTEND_URL=http://13.48.192.178
+PUBLIC_GATEWAY_URL=http://13.48.192.178
 ```
 
 ## 14. Service Communication Rules
@@ -736,8 +735,8 @@ docker compose -f docker-compose.prod.yml --env-file .env ps
 Check frontend:
 
 ```bash
-curl -I http://YOUR_EC2_PUBLIC_DNS
-curl http://YOUR_EC2_PUBLIC_DNS/health
+curl -I http://13.48.192.178
+curl http://13.48.192.178/health
 ```
 
 Check gateway from EC2:
@@ -777,7 +776,7 @@ docker compose -f docker-compose.prod.yml --env-file .env logs -f frontend-web
 Check app in browser:
 
 ```text
-http://YOUR_EC2_PUBLIC_DNS
+http://13.48.192.178
 ```
 
 ## 16. Debugging
@@ -825,7 +824,7 @@ ssh -i your-key.pem \
   -L 8761:127.0.0.1:8761 \
   -L 15672:127.0.0.1:15672 \
   -L 8025:127.0.0.1:8025 \
-  ubuntu@YOUR_EC2_PUBLIC_DNS
+  ubuntu@13.48.192.178
 ```
 
 Then open locally:

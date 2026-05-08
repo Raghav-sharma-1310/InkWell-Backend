@@ -10,9 +10,9 @@ pipeline {
   }
 
   parameters {
-    string(name: 'EC2_HOST', defaultValue: 'ec2-user@your-ec2-public-dns', description: 'SSH target for the EC2 deployment host')
+    string(name: 'EC2_HOST', defaultValue: 'ubuntu@13.48.192.178', description: 'SSH target for the EC2 deployment host')
     string(name: 'EC2_APP_DIR', defaultValue: '/opt/inkwell', description: 'Directory on EC2 containing .env and compose files')
-    string(name: 'VITE_API_BASE_URL', defaultValue: 'http://16.171.23.137:8080', description: 'Frontend API base URL baked into the Vite build')
+    string(name: 'VITE_API_BASE_URL', defaultValue: 'http://13.48.192.178:8080', description: 'Frontend API base URL baked into the Vite build')
   }
 
   environment {
