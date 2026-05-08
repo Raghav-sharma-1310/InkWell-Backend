@@ -16,8 +16,6 @@ pipeline {
   }
 
   environment {
-    DOCKER_USERNAME = credentials('dockerhub-username')
-    DOCKER_PASSWORD = credentials('dockerhub-password')
     BACKEND_REPO = 'https://github.com/Raghav-sharma-1310/InkWell-Backend.git'
     FRONTEND_REPO = 'https://github.com/Raghav-sharma-1310/InkWell-Frontend.git'
     IMAGE_TAG = "${env.BUILD_NUMBER}"
@@ -68,60 +66,69 @@ pipeline {
 
     stage('Docker Login') {
       steps {
-        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+        withCredentials([
+          string(credentialsId: 'dockerhub-username', variable: 'DOCKER_USERNAME'),
+          string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASSWORD')
+        ]) {
+          sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+        }
       }
     }
 
     stage('Build Docker Images') {
       steps {
-        script {
-          def services = [
-            'discovery-service',
-            'admin-server',
-            'api-gateway',
-            'auth-service',
-            'post-service',
-            'comment-service',
-            'category-service',
-            'media-service',
-            'newsletter-service',
-            'notification-service',
-            'payment-service'
-          ]
+        withCredentials([string(credentialsId: 'dockerhub-username', variable: 'DOCKER_USERNAME')]) {
+          script {
+            def services = [
+              'discovery-service',
+              'admin-server',
+              'api-gateway',
+              'auth-service',
+              'post-service',
+              'comment-service',
+              'category-service',
+              'media-service',
+              'newsletter-service',
+              'notification-service',
+              'payment-service'
+            ]
 
-          services.each { service ->
-            sh "docker build -t ${DOCKER_USERNAME}/inkwell-${service}:${env.IMAGE_TAG} -t ${DOCKER_USERNAME}/inkwell-${service}:latest ./backend/${service}"
+            services.each { service ->
+              sh "docker build -t ${DOCKER_USERNAME}/inkwell-${service}:${env.IMAGE_TAG} -t ${DOCKER_USERNAME}/inkwell-${service}:latest ./backend/${service}"
+            }
+
+            sh "docker build --build-arg VITE_API_BASE_URL=${params.VITE_API_BASE_URL} -t ${DOCKER_USERNAME}/inkwell-frontend:${env.IMAGE_TAG} -t ${DOCKER_USERNAME}/inkwell-frontend:latest ./frontend"
           }
-
-          sh "docker build --build-arg VITE_API_BASE_URL=${params.VITE_API_BASE_URL} -t ${DOCKER_USERNAME}/inkwell-frontend:${env.IMAGE_TAG} -t ${DOCKER_USERNAME}/inkwell-frontend:latest ./frontend"
         }
       }
     }
 
     stage('Push Docker Images') {
       steps {
-        script {
-          def services = [
-            'discovery-service',
-            'admin-server',
-            'api-gateway',
-            'auth-service',
-            'post-service',
-            'comment-service',
-            'category-service',
-            'media-service',
-            'newsletter-service',
-            'notification-service',
-            'payment-service'
-          ]
+        withCredentials([string(credentialsId: 'dockerhub-username', variable: 'DOCKER_USERNAME')]) {
+          script {
+            def services = [
+              'discovery-service',
+              'admin-server',
+              'api-gateway',
+              'auth-service',
+              'post-service',
+              'comment-service',
+              'category-service',
+              'media-service',
+              'newsletter-service',
+              'notification-service',
+              'payment-service'
+            ]
 
-          services.each { service ->
-            sh "docker push ${DOCKER_USERNAME}/inkwell-${service}:${env.IMAGE_TAG}"
-            sh "docker push ${DOCKER_USERNAME}/inkwell-${service}:latest"
-          }
+            services.each { service ->
+              sh "docker push ${DOCKER_USERNAME}/inkwell-${service}:${env.IMAGE_TAG}"
+              sh "docker push ${DOCKER_USERNAME}/inkwell-${service}:latest"
+            }
           
-          sh "docker push ${DOCKER_USERNAME}/inkwell-frontend:${env.IMAGE_TAG}"
-          sh "docker push ${DOCKER_USERNAME}/inkwell-frontend:latest"
+            sh "docker push ${DOCKER_USERNAME}/inkwell-frontend:${env.IMAGE_TAG}"
+            sh "docker push ${DOCKER_USERNAME}/inkwell-frontend:latest"
+          }
         }
       }
     }
@@ -158,7 +165,11 @@ pipeline {
       echo 'Deployment failed. Check Jenkins console logs.'
     }
     always {
-      sh 'docker logout || true'
+      script {
+        node {
+          sh 'docker logout || true'
+        }
+      }
     }
   }
 }
