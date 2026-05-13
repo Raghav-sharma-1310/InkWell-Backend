@@ -18,7 +18,10 @@ import com.inkwell.auth.exception.BadRequestException;
 import com.inkwell.auth.exception.ResourceNotFoundException;
 import com.inkwell.auth.exception.UnauthorizedException;
 import com.inkwell.auth.mapper.UserMapper;
+import com.inkwell.auth.repository.AuthorRequestRepository;
 import com.inkwell.auth.repository.EmailVerificationTokenRepository;
+import com.inkwell.auth.repository.FeedbackReportRepository;
+import com.inkwell.auth.repository.PaymentOrderRepository;
 import com.inkwell.auth.repository.UserRepository;
 import com.inkwell.auth.security.GatewayUserPrincipal;
 import com.inkwell.auth.security.JwtService;
@@ -55,6 +58,9 @@ class AuthServiceTest {
     @Mock private LoginRateLimiter loginRateLimiter;
     @Mock private AuditLogService auditLogService;
     @Mock private EmailVerificationTokenRepository verificationTokenRepository;
+    @Mock private AuthorRequestRepository authorRequestRepository;
+    @Mock private FeedbackReportRepository feedbackReportRepository;
+    @Mock private PaymentOrderRepository paymentOrderRepository;
 
     @InjectMocks private AuthService authService;
 
