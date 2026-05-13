@@ -10,7 +10,10 @@ import com.inkwell.auth.enumtype.Role;
 import com.inkwell.auth.exception.BadRequestException;
 import com.inkwell.auth.exception.ResourceNotFoundException;
 import com.inkwell.auth.mapper.UserMapper;
+import com.inkwell.auth.repository.AuthorRequestRepository;
 import com.inkwell.auth.repository.EmailVerificationTokenRepository;
+import com.inkwell.auth.repository.FeedbackReportRepository;
+import com.inkwell.auth.repository.PaymentOrderRepository;
 import com.inkwell.auth.repository.UserRepository;
 import com.inkwell.auth.security.GatewayUserPrincipal;
 import java.util.UUID;
@@ -49,6 +52,9 @@ public class AdminConsoleService {
     private final RefreshTokenService refreshTokenService;
     private final AuditLogService auditLogService;
     private final EmailVerificationTokenRepository verificationTokenRepository;
+    private final AuthorRequestRepository authorRequestRepository;
+    private final FeedbackReportRepository feedbackReportRepository;
+    private final PaymentOrderRepository paymentOrderRepository;
 
     /**
      * Removes the ADMIN role from the specified admin account and downgrades the user to USER role.
@@ -118,8 +124,11 @@ public class AdminConsoleService {
         // Revoke active tokens to immediately invalidate sessions
         refreshTokenService.revokeAll(target);
 
-        // Remove email verification tokens referencing this user to satisfy FK constraints
+        // Remove all related records to satisfy FK constraints before deleting the admin
         verificationTokenRepository.deleteAll(verificationTokenRepository.findAllByUser(target));
+        authorRequestRepository.deleteAll(authorRequestRepository.findAllByUser(target));
+        feedbackReportRepository.deleteAll(feedbackReportRepository.findAllByUser(target));
+        paymentOrderRepository.deleteAll(paymentOrderRepository.findAllByUser(target));
 
         // Delete the admin user account
         userRepository.delete(target);

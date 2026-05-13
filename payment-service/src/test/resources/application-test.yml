@@ -17,8 +17,3 @@ spring:
 eureka:
   client:
     enabled: false
-
-app:
-  razorpay:
-    key-id: test-razorpay-key
-    key-secret: test-razorpay-secret

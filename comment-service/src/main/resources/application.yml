@@ -80,3 +80,4 @@ resilience4j:
     configs:
       default:
         timeoutDuration: 3s
+        

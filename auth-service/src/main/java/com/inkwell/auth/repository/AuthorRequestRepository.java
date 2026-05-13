@@ -25,4 +25,6 @@ public interface AuthorRequestRepository extends JpaRepository<AuthorRequest, UU
     List<AuthorRequest> findAllByOrderByRequestedAtDesc();
 
     List<AuthorRequest> findByStatusOrderByRequestedAtDesc(RequestStatus status);
+
+    List<AuthorRequest> findAllByUser(User user);
 }

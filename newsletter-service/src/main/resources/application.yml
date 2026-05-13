@@ -62,3 +62,4 @@ springdoc:
 app:
   mail:
     from: ${MAIL_FROM:no-reply@inkwell.dev}
+    

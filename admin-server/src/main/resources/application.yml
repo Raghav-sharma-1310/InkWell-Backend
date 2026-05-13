@@ -1,4 +1,4 @@
-server:
+sserver:
   port: ${SERVER_PORT:9090}
 
 spring:
@@ -24,3 +24,4 @@ management:
   endpoint:
     health:
       show-details: always
+      

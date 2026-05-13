@@ -5,6 +5,7 @@
 package com.inkwell.auth.repository;
 
 import com.inkwell.auth.entity.PaymentOrder;
+import com.inkwell.auth.entity.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,4 +17,6 @@ public interface PaymentOrderRepository extends JpaRepository<PaymentOrder, UUID
     Optional<PaymentOrder> findByPaymentOrderIdAndUserUserId(UUID paymentOrderId, UUID userId);
 
     List<PaymentOrder> findByUserUserIdOrderByCreatedAtDesc(UUID userId);
+
+    List<PaymentOrder> findAllByUser(User user);
 }

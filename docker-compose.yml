@@ -139,6 +139,8 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_S3_PUBLIC_BASE_URL: ${AWS_S3_PUBLIC_BASE_URL}
+    volumes:
+      - media-storage:/app/${LOCAL_STORAGE_DIR:-uploads/media}
 
   newsletter-service:
     build: ./newsletter-service
@@ -172,13 +174,27 @@ services:
       MAIL_HOST: mailpit
       MAIL_PORT: 1025
 
+  payment-service:
+    build: ./payment-service
+    depends_on: [discovery-service, admin-server]
+    environment:
+      EUREKA_URL: http://discovery-service:8761/eureka
+      ADMIN_SERVER_URL: http://admin-server:9090
+      SERVICE_BASE_URL: http://payment-service:8088
+      MANAGEMENT_BASE_URL: http://payment-service:8088
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_SgoQsLflvrndzQ}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-TErxgzBghMRiPzEi7ISXBgnE}
+    ports:
+      - "8088:8088"
+
   frontend-web:
     build: ./frontend-web
     environment:
       VITE_API_BASE_URL: http://localhost:8080
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
-    depends_on: [api-gateway]
+    depends_on: [api-gateway, payment-service]
 
 volumes:
   mysql-data:
+  media-storage:

@@ -22,10 +22,10 @@ public class RazorpayService {
     private static final String KEY_AMOUNT = "amount";
     private static final String KEY_CURRENCY = "currency";
 
-    @Value("${app.razorpay.key-id}")
+    @Value("${app.razorpay.key-id:rzp_test_key}")
     private String keyId;
 
-    @Value("${app.razorpay.key-secret}")
+    @Value("${app.razorpay.key-secret:rzp_test_secret}")
     private String keySecret;
 
     // Performs the create order workflow so callers do not duplicate this logic.

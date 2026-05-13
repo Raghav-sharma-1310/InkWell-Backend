@@ -20,7 +20,10 @@ import com.inkwell.auth.exception.BadRequestException;
 import com.inkwell.auth.exception.ResourceNotFoundException;
 import com.inkwell.auth.exception.UnauthorizedException;
 import com.inkwell.auth.mapper.UserMapper;
+import com.inkwell.auth.repository.AuthorRequestRepository;
 import com.inkwell.auth.repository.EmailVerificationTokenRepository;
+import com.inkwell.auth.repository.FeedbackReportRepository;
+import com.inkwell.auth.repository.PaymentOrderRepository;
 import com.inkwell.auth.repository.UserRepository;
 import com.inkwell.auth.security.GatewayUserPrincipal;
 import com.inkwell.auth.security.JwtService;
@@ -52,6 +55,9 @@ public class AuthService {
     private final LoginRateLimiter loginRateLimiter;
     private final AuditLogService auditLogService;
     private final EmailVerificationTokenRepository verificationTokenRepository;
+    private final AuthorRequestRepository authorRequestRepository;
+    private final FeedbackReportRepository feedbackReportRepository;
+    private final PaymentOrderRepository paymentOrderRepository;
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -288,8 +294,14 @@ public class AuthService {
         if (user.getRole() == Role.ADMIN) {
             throw new BadRequestException("Cannot delete an admin account");
         }
+
+        // Remove all related records to satisfy FK constraints before deleting the user
         refreshTokenService.revokeAll(user);
         verificationTokenRepository.deleteAll(verificationTokenRepository.findAllByUser(user));
+        authorRequestRepository.deleteAll(authorRequestRepository.findAllByUser(user));
+        feedbackReportRepository.deleteAll(feedbackReportRepository.findAllByUser(user));
+        paymentOrderRepository.deleteAll(paymentOrderRepository.findAllByUser(user));
+
         userRepository.delete(user);
         log.info("Deleted user {}", user.getEmail());
         auditLogService.logAction(null, SYSTEM_ADMIN_ACTOR, "USER_DELETED", "USER", userId.toString(), "Deleted user " + user.getEmail());

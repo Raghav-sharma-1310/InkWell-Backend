@@ -23,4 +23,6 @@ public interface FeedbackReportRepository extends JpaRepository<FeedbackReport, 
     List<FeedbackReport> findAllByOrderByCreatedAtDesc();
 
     List<FeedbackReport> findByStatusOrderByCreatedAtDesc(FeedbackStatus status);
+
+    List<FeedbackReport> findAllByUser(User user);
 }

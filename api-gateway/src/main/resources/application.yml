@@ -194,3 +194,4 @@ springdoc:
     try-it-out-enabled: true
     syntax-highlight:
       activated: true
+      
