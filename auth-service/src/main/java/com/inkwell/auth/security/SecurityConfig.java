@@ -27,6 +27,9 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2AccountService oAuth2AccountService;
 
+    @org.springframework.beans.factory.annotation.Value("${app.frontend-url}")
+    private String frontendUrl;
+
     @Bean
     // Provides security filter chain wiring so the framework can apply the expected runtime behavior.
     @SuppressWarnings("java:S4502")
@@ -67,7 +70,6 @@ public class SecurityConfig {
                 .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2AccountService))
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler((request, response, exception) -> {
-                    String frontendUrl = request.getScheme() + "://" + request.getServerName() + ":5173";
                     response.sendRedirect(frontendUrl + "/login?error=oauth");
                 })
             )

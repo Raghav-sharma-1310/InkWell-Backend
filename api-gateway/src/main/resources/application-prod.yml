@@ -1,4 +1,7 @@
 # Production profile. Values are supplied by docker-compose.prod.yml from .env.
+server:
+  forward-headers-strategy: native
+
 spring:
   boot:
     admin:

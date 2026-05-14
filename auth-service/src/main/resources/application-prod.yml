@@ -1,4 +1,7 @@
 # Production profile. Values are supplied by docker-compose.prod.yml from .env.
+server:
+  forward-headers-strategy: native
+
 spring:
   boot:
     admin:
@@ -20,11 +23,11 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID:}
             client-secret: ${GOOGLE_CLIENT_SECRET:}
-            redirect-uri: ${PUBLIC_GATEWAY_URL}/login/oauth2/code/{registrationId}
+            redirect-uri: ${GOOGLE_REDIRECT_URI:${PUBLIC_GATEWAY_URL}/login/oauth2/code/google}
           github:
             client-id: ${GITHUB_CLIENT_ID:}
             client-secret: ${GITHUB_CLIENT_SECRET:}
-            redirect-uri: ${PUBLIC_GATEWAY_URL}/login/oauth2/code/{registrationId}
+            redirect-uri: ${GITHUB_REDIRECT_URI:${PUBLIC_GATEWAY_URL}/login/oauth2/code/github}
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -42,6 +45,7 @@ security:
     secret: ${JWT_SECRET}
 
 app:
+  frontend-url: ${FRONTEND_URL}
   oauth2:
     redirect-uri: ${OAUTH2_REDIRECT_URI}
   payment:
